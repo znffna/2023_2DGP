@@ -15,10 +15,13 @@ def load_resources():
 
 def handle_events():
     global running
+    global mx, my
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
             running = False
+        elif event.type == SDL_MOUSEMOTION:
+            mx, my = event.x, TUK_HEIGHT - 1 - event.y
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
     pass
@@ -26,8 +29,11 @@ def handle_events():
 
 def reset_world():
     global running, cx, cy, frame
+    global t
     global action
+    global mx, my
 
+    mx, my = 0, 0
     running = True
     cx, cy = TUK_WIDTH // 2, TUK_HEIGHT // 2
     frame = 0
@@ -50,7 +56,7 @@ def set_new_target_arrow():
 def render_world():
     clear_canvas()
     TUK_ground.draw(TUK_WIDTH // 2, TUK_HEIGHT // 2)
-    # arrow.draw(hx, hy)
+    arrow.draw(mx, my)
     character.clip_draw(frame * 100, 100 * action, 100, 100, cx, cy)
     update_canvas()
 
