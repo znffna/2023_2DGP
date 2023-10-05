@@ -26,6 +26,20 @@ class Boy:
     def draw(self):
         self.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
 
+
+class Ball:
+    def __init__(self):
+        self.x, self.y, self.size = random.randint(100, 700), 599, random.randint(0, 1)
+        self.image = load_image('ball21x21.png') if self.size == 0 else load_image('ball41x41.png')
+        self.speed = random.randint(3, 15)
+
+    def draw(self):
+        self.image.draw(self.x, self.y, (self.size+1)*20, (self.size+1)*20)
+
+    def update(self):
+        self.y = self.y - self.speed if self.y > 60 + (self.size+1) * 10 else 60 + (self.size+1)*10
+
+
 def handle_events():
     global running
     events = get_events()
@@ -42,6 +56,8 @@ def reset_world():
     global grass
     global team
     global world
+    global sball
+    global bball
 
 
     running = True
@@ -49,8 +65,12 @@ def reset_world():
 
     grass = Grass()
     world.append(grass)
+
     team = [Boy() for i in range(11)]
     world += team
+
+    ball = [Ball() for i in range(20)]
+    world += ball
 
 
 def update_world():
