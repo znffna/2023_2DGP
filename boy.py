@@ -54,18 +54,21 @@ class Autorun:
     @staticmethod
     def do(boy):
         print('Autorun do')
+        boy.progress_time = get_time() - boy.start_time
         boy.frame = (boy.frame + 1) % 8
-        boy.x += boy.dir * 5
+        boy.x += boy.dir * (5 + boy.progress_time)
         if boy.x > 800:
             boy.dir, boy.action = -1, 0
         elif boy.x < 0:
             boy.dir, boy.action = 1, 1
-        if get_time() - boy.start_time > 5:
+        if boy.progress_time > 5:
             boy.state_machine.handle_event(('TIME_OUT', 0))
 
     @staticmethod
     def draw(boy):
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+        boy.image.clip_composite_draw(boy.frame * 100, boy.action * 100, 100, 100, 0, '',
+                                      boy.x, boy.y, 100 + boy.progress_time * 20,
+                                      100 + boy.progress_time * 20)
 
 
 class Run:
@@ -153,9 +156,9 @@ class StateMachine:
         self.boy = boy
         self.cur_state = Idle
         self.table = {
-            Sleep: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, space_down: Idle},
+            Sleep: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, space_down: Idle, a_down: Autorun},
             Idle: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, time_out: Sleep, a_down: Autorun},
-            Run: {right_down: Idle, right_up: Idle, left_down: Idle, left_up: Idle},
+            Run: {right_down: Idle, right_up: Idle, left_down: Idle, left_up: Idle, a_down: Autorun},
             Autorun: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, time_out: Idle}
         }
 
