@@ -31,15 +31,17 @@ def left_down(e):
 def left_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
 
+
 def a_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_a
+
 
 class Autorun:
     @staticmethod
     def enter(boy, e):
         print('Autorun Enter')
         boy.start_time = get_time()
-        if boy.dir == 1:
+        if boy.action % 2 == 1:
             boy.dir, boy.action = 1, 1
         else:
             boy.dir, boy.action = -1, 0
@@ -51,6 +53,7 @@ class Autorun:
 
     @staticmethod
     def do(boy):
+        print('Autorun do')
         boy.frame = (boy.frame + 1) % 8
         boy.x += boy.dir * 5
         if boy.x > 800:
@@ -59,7 +62,6 @@ class Autorun:
             boy.dir, boy.action = 1, 1
         if get_time() - boy.start_time > 5:
             boy.state_machine.handle_event(('TIME_OUT', 0))
-
 
     @staticmethod
     def draw(boy):
@@ -126,7 +128,7 @@ class Idle:
             boy.action = 3
         boy.dir = 0
         boy.frame = 0
-        boy.start_time = get_time() # pico2d import 필요
+        boy.start_time = get_time()  # pico2d import 필요
         print('Idle Enter')
 
     @staticmethod
@@ -154,7 +156,7 @@ class StateMachine:
             Sleep: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, space_down: Idle},
             Idle: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, time_out: Sleep, a_down: Autorun},
             Run: {right_down: Idle, right_up: Idle, left_down: Idle, left_up: Idle},
-            Autorun: {right_down: Run, right_up: Run, left_down: Run, left_up: Run}
+            Autorun: {right_down: Run, right_up: Run, left_down: Run, left_up: Run, time_out: Idle}
         }
 
     def start(self):
