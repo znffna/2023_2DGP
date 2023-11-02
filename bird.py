@@ -158,7 +158,7 @@ class StateMachine:
 
 class Bird:
     def __init__(self):
-        self.x, self.y = random.randint(50, 500 - 50), 290
+        self.x, self.y = random.randint(50, 450 - 50), 290
         self.frame = 0
         self.action = 3
         self.face_dir = 1
