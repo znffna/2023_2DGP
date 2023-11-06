@@ -45,6 +45,13 @@ def init():
     zombies = [Zombie() for _ in range(5)]
     game_world.add_objects(zombies, 1)
 
+    # 충돌 상황을 등록.
+    for zombie in zombies:
+        game_world.add_collision_pair('ball:zombie', None, zombie)
+        game_world.add_collision_pair('boy:zombie', None, zombie)
+
+    game_world.add_collision_pair('boy:zombie', boy, None)
+
 
 def finish():
     game_world.clear()
