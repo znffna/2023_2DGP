@@ -25,8 +25,6 @@ def init():
     global grass
     global boy
 
-    running = True
-
     grass = Grass()
     game_world.add_object(grass, 0)
 
@@ -34,6 +32,9 @@ def init():
     game_world.add_object(boy, 1)
 
     # fill here
+    global balls
+    balls = [Ball(random.randint(100, 1600 - 100), 60, 0) for _ in range(30)]
+    game_world.add_objects(balls, 1)
 
 
 
@@ -44,6 +45,9 @@ def finish():
 
 def update():
     game_world.update()
+    for ball in balls:
+        if game_world.collide(boy, ball):
+            print('COLLISION boy:ball')
     # fill here
 
 def draw():

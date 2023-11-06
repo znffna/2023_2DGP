@@ -12,6 +12,7 @@ class Ball:
 
     def draw(self):
         self.image.draw(self.x, self.y)
+        draw_rectangle(*self.get_bb())  # 넘어올때 하나의 튜플로 넘어옴. 튜플앞에 *를 붙여주면 튜플을 풀어해쳐서 각각 인자로 전달.
 
     def update(self):
         self.x += self.velocity * 100 * game_framework.frame_time
@@ -20,3 +21,5 @@ class Ball:
             game_world.remove_object(self)
 
     # fill here
+    def get_bb(self):
+        return self.x - 10, self.y - 10, self.x + 10, self.y + 10
