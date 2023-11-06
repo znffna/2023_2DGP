@@ -41,6 +41,9 @@ def init():
     for ball in balls:
         game_world.add_collision_pair('boy:ball', None, ball)
 
+    # 좀비 5마리 추가  200 x 200 인데 1pt 당 3cm입니다 처럼 말해야함.
+    zombies = [Zombie() for _ in range(5)]
+    game_world.add_objects(zombies, 1)
 
 
 def finish():
