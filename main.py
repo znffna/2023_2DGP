@@ -1,5 +1,6 @@
 from pico2d import *
 
+import game_world
 from player import Player
 
 
@@ -9,6 +10,8 @@ def create_world():
     running = True
 
     player = Player()
+    game_world.add_object(player)
+
     pass
 
 
@@ -22,13 +25,14 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
         else:
-            # player.handle_event(event)
+            player.handle_event(event)
             pass
     pass
 
 
 def update_world():
     # player.update()
+    game_world.update()
     pass
 
 
@@ -36,6 +40,7 @@ def render_world():
     clear_canvas()
 
     # player.draw()
+    game_world.render()
 
     update_canvas()
     pass

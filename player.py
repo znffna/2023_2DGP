@@ -49,7 +49,21 @@ def time_out(e):
 class Idle:  # 가만히 있음
     @staticmethod
     def enter(player, e):
-        player.frame = 0
+        if player.face_dir == -1:
+            player.move_dir = 2
+        elif player.face_dir == 1:
+            player.move_dir = 1
+        elif player.face_dir == 2:
+            player.move_dir = 0
+        elif player.face_dir == -2:
+            player.move_dir = 3
+        # player.move_dir -= 4
+
+        player.LR_dir = 0
+        player.TB_dir = 0
+        player.frame = 6
+        # player.wait_time = get_time()  # pico2d import 필요
+
         pass
 
     @staticmethod
@@ -58,11 +72,12 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def do(player):
+        player.frame = (player.frame - 6 + 1) % 6 + 6
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 70, 400, 50, 70, player.x, player.y);
+        player.image.clip_draw(player.frame * 70, player.move_dir * 80, 50, 70, player.x, player.y);
         pass
 
 
@@ -70,6 +85,14 @@ class Move:  # 이동 중
     @staticmethod
     def enter(player, e):
         player.frame = 0
+        if right_down(e) or left_up(e):  # 오른쪽으로 RUN
+            player.LR_dir, player.move_dir, player.face_dir = 1, 5, 1
+        elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
+            player.LR_dir, player.move_dir, player.face_dir = -1, 6, -1
+        elif up_down(e) or up_up(e):  # 위로 RUN
+            player.TB_dir, player.move_dir, player.face_dir = 1, 4, 2
+        elif down_down(e) or down_up(e):  # 아래로 RUN
+            player.TB_dir, player.move_dir, player.face_dir = -1, 7, -2
         pass
 
     @staticmethod
@@ -79,11 +102,16 @@ class Move:  # 이동 중
     @staticmethod
     def do(player):
         # 이동하는 코드 작성
+        player.frame = (player.frame + 1) % 3
+        player.x += player.LR_dir * 5
+        player.y += player.TB_dir * 5
+        player.x = clamp(35, player.x, 800 - 35)
+        player.y = clamp(35, player.y, 200 - 35)
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 70, 240, 50, 70, player.x, player.y);
+        player.image.clip_draw(player.frame * 70, player.move_dir * 80, 50, 70, player.x, player.y);
         pass
 
 
@@ -92,7 +120,10 @@ class StateMachine:
         self.player = player
         self.cur_state = Idle
         self.transitions = {
-            # {Idle : }
+            Idle: {right_down: Move, left_down: Move, up_down: Move, down_down: Move
+                , right_up: Move, left_up: Move, up_up: Move, down_up: Move},
+            Move: {right_down: Idle, left_down: Idle, up_down: Idle, down_down: Idle
+                , right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle}
         }
 
     def start(self):
@@ -122,16 +153,19 @@ class Player:
         self.x, self.y = 400, 60
         self.frame = 0
         self.state_machine = StateMachine(self)
-        self.direction = 1
+        self.LR_dir = 0    # 좌우 이동하는 방향 (로직)
+        self.TB_dir = 0    # 상하 이동하는 방향 (로직)
+        self.face_dir = 1  # 바라보는 방향 (방향 파악)
+        self.move_dir = 0  # 바라보는 방향 (이미지 위치)
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
 
     def update(self):
-        self.frame = (self.frame + 1) % 3
+        self.state_machine.update()
 
     def handle_event(self, e):
-        self.state_machine.handle_event(e)
+        self.state_machine.handle_event(('INPUT', e))
 
     def draw(self):
         self.state_machine.draw()
