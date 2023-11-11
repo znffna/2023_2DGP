@@ -122,7 +122,8 @@ class MoveHorizon:  # 좌우 이동 중
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.x = clamp(35, player.x, 800 - 35)
+        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
+        # player.x = clamp(35, player.x, 800 - 35)
         pass
 
     @staticmethod
@@ -155,7 +156,9 @@ class MoveVertical:  # 상하 이동 중
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.y = clamp(35, player.y, 200 - 35)
+        player.y = clamp(35, player.y, 145 - 35)
+        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
+
         pass
 
     @staticmethod
@@ -187,9 +190,10 @@ class MoveDiagonal:  # 대각선 이동 중
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.x = clamp(35, player.x, 800 - 35)
+        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
+        # player.x = clamp(35, player.x, 800 - 35)
         player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.y = clamp(35, player.y, 200 - 35)
+        player.y = clamp(35, player.y, 145 - 35)
         pass
 
     @staticmethod
@@ -256,4 +260,14 @@ class Player:
 
     def draw(self):
         self.state_machine.draw()
+        draw_rectangle(*self.get_bb())
         pass
+
+    def get_bb(self):
+        return self.x - 35, self.y - 40, self.x + 35, self.y + 40
+
+    def handle_collision(self, group, other):
+        if group == 'boy:ball':
+            self.ball_count += 1
+        if group == 'boy:zombie':
+            game_framework.quit()

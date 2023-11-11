@@ -4,6 +4,7 @@ from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE
 import game_framework
 import game_world
 from player import Player
+from stadium import Stadium
 
 
 def handle_events():
@@ -26,8 +27,13 @@ def init():
     global player
     running = True
 
+    stadium = Stadium()
+    game_world.add_object(stadium)
+
     player = Player()
-    game_world.add_object(player)
+    game_world.add_object(player, 1)
+
+
     pass
 
 
