@@ -1,5 +1,7 @@
 from pico2d import *
 
+import game_framework
+
 
 # state event check
 # ( state event type, event value )
@@ -45,7 +47,8 @@ def time_out(e):
 
 # Player Run Speed
 # 배드민턴 길이 = 13.4m, 출력할 캔버스 크기 : 800 * 600
-PIXEL_PER_METER = (800 / 1340)  # 800 pixel 1340 cm
+# PIXEL_PER_METER = (8000 / 1340)  # 800 pixel 1340 cm
+PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 20.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
@@ -63,13 +66,13 @@ FRAMES_PER_ACTION = 8
 class Idle:  # 가만히 있음
     @staticmethod
     def enter(player, e):
-        if player.face_dir == -1:
+        if player.face_dir == '왼쪽':
             player.move_dir = 2
-        elif player.face_dir == 1:
+        elif player.face_dir == '오른쪽':
             player.move_dir = 1
-        elif player.face_dir == 2:
+        elif player.face_dir == '위쪽':
             player.move_dir = 0
-        elif player.face_dir == -2:
+        elif player.face_dir == '아래쪽':
             player.move_dir = 3
         # player.move_dir -= 4
 
@@ -85,12 +88,12 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def do(player):
-        player.frame = (player.frame - 6 + 1) % 6 + 6
+        player.frame = (player.frame - 6 + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 6 + 6
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
         pass
 
 
@@ -99,14 +102,14 @@ class MoveHorizon:  # 좌우 이동 중
     def enter(player, e):
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = 1, 5, 1
+            player.LR_dir, player.move_dir, player.face_dir = 1, 5, '오른쪽'
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = -1, 6, -1
+            player.LR_dir, player.move_dir, player.face_dir = -1, 6, '왼쪽'
         elif up_down(e) or down_up(e) or down_down(e) or up_up(e):
             if player.LR_dir == 1:
-                player.move_dir, player.face_dir = 5, 1
+                player.move_dir, player.face_dir = 5, '오른쪽'
             else:
-                player.move_dir, player.face_dir = 6, -1
+                player.move_dir, player.face_dir = 6, '왼쪽'
 
         pass
 
@@ -117,14 +120,14 @@ class MoveHorizon:  # 좌우 이동 중
     @staticmethod
     def do(player):
         # 이동하는 코드 작성
-        player.frame = (player.frame + 1) % 3
-        player.x += player.LR_dir * 5
+        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.x = clamp(35, player.x, 800 - 35)
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
         pass
 
 
@@ -133,14 +136,14 @@ class MoveVertical:  # 상하 이동 중
     def enter(player, e):
         player.frame = 0
         if up_down(e) or down_up(e):  # 위쪽으로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = 1, 4, 2
+            player.TB_dir, player.move_dir, player.face_dir = 1, 4, '위쪽'
         elif down_down(e) or up_up(e):  # 아래로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = -1, 7, -2
+            player.TB_dir, player.move_dir, player.face_dir = -1, 7, '아래쪽'
         elif right_down(e) or left_up(e) or left_down(e) or right_up(e):
             if player.TB_dir == 1:
-                player.move_dir, player.face_dir = 4, 2
+                player.move_dir, player.face_dir = 4, '위쪽'
             else:
-                player.move_dir, player.face_dir = 7, -2
+                player.move_dir, player.face_dir = 7, '아래쪽'
 
 
     @staticmethod
@@ -150,14 +153,14 @@ class MoveVertical:  # 상하 이동 중
     @staticmethod
     def do(player):
         # 이동하는 코드 작성
-        player.frame = (player.frame + 1) % 3
-        player.y += player.TB_dir * 5
+        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.y = clamp(35, player.y, 200 - 35)
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
         pass
 
 
@@ -166,13 +169,13 @@ class MoveDiagonal:  # 대각선 이동 중
     def enter(player, e):
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = 1, 5, 1
+            player.LR_dir, player.move_dir, player.face_dir = 1, 5, '오른쪽'
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = -1, 6, -1
+            player.LR_dir, player.move_dir, player.face_dir = -1, 6, '왼쪽'
         elif up_down(e) or down_up(e):  # 위쪽으로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = 1, 4, 2
+            player.TB_dir, player.move_dir, player.face_dir = 1, 4, '위쪽'
         elif down_down(e) or up_up(e):  # 아래로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = -1, 7, -2
+            player.TB_dir, player.move_dir, player.face_dir = -1, 7, '아래쪽'
         pass
 
     @staticmethod
@@ -182,16 +185,16 @@ class MoveDiagonal:  # 대각선 이동 중
     @staticmethod
     def do(player):
         # 이동하는 코드 작성
-        player.frame = (player.frame + 1) % 3
-        player.x += player.LR_dir * 5
+        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+        player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.x = clamp(35, player.x, 800 - 35)
-        player.y += player.TB_dir * 5
+        player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.y = clamp(35, player.y, 200 - 35)
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
         pass
 
 
@@ -239,7 +242,7 @@ class Player:
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
-        self.face_dir = 1  # 바라보는 방향 (방향 파악)
+        self.face_dir = '오른쪽'  # 바라보는 방향 (방향 파악)
         self.move_dir = 0  # 바라보는 방향 (이미지 위치)
 
         if Player.image == None:
