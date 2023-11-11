@@ -43,6 +43,20 @@ def space_down(e):
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
+# Player Run Speed
+# 배드민턴 길이 = 13.4m, 출력할 캔버스 크기 : 800 * 600
+PIXEL_PER_METER = (800 / 1340)  # 800 pixel 1340 cm
+RUN_SPEED_KMPH = 20.0  # Km / Hour
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
+# Player Action Speed
+TIME_PER_ACTION = 0.5
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+FRAMES_PER_ACTION = 8
+
+
 
 # 상태에 대한 클래스
 
