@@ -31,7 +31,6 @@ def handle_events():
 
 
 def update_world():
-    # player.update()
     game_world.update()
     pass
 
@@ -39,7 +38,6 @@ def update_world():
 def render_world():
     clear_canvas()
 
-    # player.draw()
     game_world.render()
 
     update_canvas()
