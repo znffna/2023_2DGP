@@ -4,6 +4,7 @@ from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE
 import game_framework
 import game_world
 from player import Player
+from shuttle import Shuttle
 from stadium import Stadium
 
 
@@ -35,6 +36,10 @@ def init():
     player = Player()
     game_world.add_object(player, 1)
     game_world.add_collision_pair('player:net', player, None)
+
+    shuttle = Shuttle()
+    game_world.add_object(shuttle, 2)
+
 
 
     pass

@@ -158,7 +158,6 @@ class MoveVertical:  # 상하 이동 중
         player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.y = clamp(35, player.y, 145 - 35)
         player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
-
         pass
 
     @staticmethod
