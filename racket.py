@@ -31,7 +31,7 @@ class Idle:  # 가만히 있음
     def draw(racket):
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(90.0), ''
                                          , racket.x + 35 * cos(radians(135.0))
-                                         , racket.y + 35 * sin(radians(135.0)), 70, 70);
+                                         , racket.z + 35 * sin(radians(135.0)), 70, 70);
 
 
 class Swing:  # 가만히 있음
@@ -56,7 +56,7 @@ class Swing:  # 가만히 있음
     def draw(racket):
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.racket_rad + 90.0), ''
                                          , racket.x + 35 * cos(radians(racket.racket_rad + 135.0))
-                                         , racket.y + 35 * sin(radians(racket.racket_rad + 135.0)), 70, 70);
+                                         , racket.z + 35 * sin(radians(racket.racket_rad + 135.0)), 70, 70);
         pass
 
 
@@ -94,7 +94,7 @@ class StateMachine:
 class Racket:
     image = None
     def __init__(self):
-        self.x, self.y = 0, 0
+        self.x, self.z = 0, 0
         self.racket_rad = 0.0
         self.racket_swing = False
         self.state_machine = StateMachine(self)
@@ -117,7 +117,7 @@ class Racket:
 
     def get_bb(self):
         now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + 135.0))
-        now_y = self.y + 1.5 * 35 * sin(radians(self.racket_rad + 135.0))
+        now_y = self.z + 1.5 * 35 * sin(radians(self.racket_rad + 135.0))
 
         return now_x - 20, now_y - 20, now_x + 20, now_y + 20
 

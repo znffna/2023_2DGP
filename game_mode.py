@@ -1,5 +1,5 @@
 from pico2d import get_events, clear_canvas, update_canvas
-from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE
+from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE, SDLK_s
 
 import game_framework
 import game_world
@@ -12,6 +12,7 @@ from stadium import Stadium
 def handle_events():
     global running
     global player
+    global shuttle
 
     events = get_events()
     for event in events:
@@ -19,6 +20,10 @@ def handle_events():
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_s:
+            shuttle.x = 300
+            shuttle.y = 30
+            shuttle.z = 300
         else:
             player.handle_event(event)
             pass
@@ -29,6 +34,7 @@ def init():
     global running
     global player
     global racket
+    global shuttle
     running = True
 
     stadium = Stadium()

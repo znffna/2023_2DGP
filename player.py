@@ -106,7 +106,7 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.z);
         pass
 
 
@@ -135,14 +135,14 @@ class MoveHorizon:  # 좌우 이동 중
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
+        player.x = clamp(player.z - 30, player.x, 800 + 30 - player.z)
         # player.x = clamp(35, player.x, 800 - 35)
 
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.z);
         pass
 
 
@@ -168,14 +168,14 @@ class MoveVertical:  # 상하 이동 중
     def do(player):
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
-        player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.y = clamp(35, player.y, 145 - 35)
-        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
+        player.z += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
+        player.z = clamp(35, player.z, 145 - 35)
+        player.x = clamp(player.z - 30, player.x, 800 + 30 - player.z)
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 78, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 78, player.x, player.z);
         pass
 
 
@@ -202,10 +202,10 @@ class MoveDiagonal:  # 대각선 이동 중
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
+        player.x = clamp(player.z - 30, player.x, 800 + 30 - player.z)
         # player.x = clamp(35, player.x, 800 - 35)
-        player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.y = clamp(35, player.y, 145 - 35)
+        player.z += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
+        player.z = clamp(35, player.z, 145 - 35)
 
         # if player.height > 0:
         #     player.height += player.velocity * game_framework.frame_time
@@ -219,7 +219,7 @@ class MoveDiagonal:  # 대각선 이동 중
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.z);
         pass
 
 
@@ -232,7 +232,7 @@ class Jump:
 
     @staticmethod
     def exit(player, e):
-        player.height = 0
+        player.z = 0
         pass
 
     @staticmethod
@@ -242,14 +242,14 @@ class Jump:
         if current_time > TIME_PER_JUMP:
             player.state_machine.handle_event(('TIME_OUT', 0))
         if player.current_time < TIME_PER_JUMP / 2.0:
-            player.height += JUMP_SPEED_PPS * game_framework.frame_time
+            player.z += JUMP_SPEED_PPS * game_framework.frame_time
 
         player.current_time = current_time
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.z);
         pass
 
 
@@ -298,7 +298,7 @@ class Player:
 
     def __init__(self, racket):
         self.racket = racket
-        self.x, self.y = 300, 60
+        self.x, self.z = 300, 60
         self.height = 0
         self.frame = 0
         self.state_machine = StateMachine(self)
@@ -313,7 +313,7 @@ class Player:
     def update(self):
         self.state_machine.update()
         self.racket.x = self.x
-        self.racket.y = self.y
+        self.racket.z = self.z
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))
@@ -325,7 +325,7 @@ class Player:
         pass
 
     def get_bb(self):
-        return self.x - 35, self.y - 40, self.x + 35, self.y + 40
+        return self.x - 35, self.z - 40, self.x + 35, self.z + 40
 
     def handle_collision(self, group, other):
         if group == 'player:net':
