@@ -14,6 +14,7 @@ class Shuttle:
 
     def __init__(self):
         self.x, self.y = 300, 30
+        self.x_distance = 0
         self.height = 400
         self.velocity = 0.0
         self.accelate = 0.0
@@ -28,7 +29,8 @@ class Shuttle:
         if self.height > 0:
             self.height += self.velocity * game_framework.frame_time
             self.velocity += self.accelate
-            self.accelate -= 0.0098
+            self.velocity = clamp(-1000.0, self.velocity, 1000.0)
+            self.accelate -= 9.8 * game_framework.frame_time
         else:
             self.accelate = 0
             self.velocity = 0
@@ -42,7 +44,7 @@ class Shuttle:
         # self.image.draw(1200, 30)
 
     def get_bb(self):  # shuttle size
-        return self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size
+        return self.x - self.size, self.y + self.height - self.size, self.x + self.size, self.y + self.height + self.size
 
     def handle_collision(self, group, other):
         pass

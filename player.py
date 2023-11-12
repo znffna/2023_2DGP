@@ -1,3 +1,5 @@
+from math import radians, cos, sin
+
 from pico2d import *
 
 import game_framework
@@ -45,6 +47,7 @@ def space_down(e):
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
+
 # Player Run Speed
 # 배드민턴 길이 = 13.4m, 출력할 캔버스 크기 : 800 * 600
 # PIXEL_PER_METER = (8000 / 1340)  # 800 pixel 1340 cm
@@ -58,7 +61,6 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
-
 
 
 # 상태에 대한 클래스
@@ -146,7 +148,6 @@ class MoveVertical:  # 상하 이동 중
             else:
                 player.move_dir, player.face_dir = 7, '아래쪽'
 
-
     @staticmethod
     def exit(player, e):
         pass
@@ -193,6 +194,15 @@ class MoveDiagonal:  # 대각선 이동 중
         # player.x = clamp(35, player.x, 800 - 35)
         player.y += player.TB_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.y = clamp(35, player.y, 145 - 35)
+
+        # if player.height > 0:
+        #     player.height += player.velocity * game_framework.frame_time
+        #     player.velocity += player.accelate * game_framework.frame_time
+        #     player.accelate -= 0.0098 * game_framework.frame_time
+        # else:
+        #     player.accelate = 0
+        #     player.velocity = 0
+        #     player.height = 0
         pass
 
     @staticmethod
@@ -209,11 +219,13 @@ class StateMachine:
             Idle: {right_down: MoveHorizon, left_down: MoveHorizon, right_up: MoveHorizon, left_up: MoveHorizon,
                    up_down: MoveVertical, down_up: MoveVertical, down_down: MoveVertical, up_up: MoveVertical},
             MoveHorizon: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle
-                          ,up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal},
-            MoveVertical: {right_down: MoveDiagonal, left_down: MoveDiagonal, right_up: MoveDiagonal, left_up: MoveDiagonal
-                          ,up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle},
-            MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical, left_up: MoveVertical
-                          ,up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon},
+                , up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal},
+            MoveVertical: {right_down: MoveDiagonal, left_down: MoveDiagonal, right_up: MoveDiagonal,
+                           left_up: MoveDiagonal
+                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle},
+            MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical,
+                           left_up: MoveVertical
+                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon},
         }
 
     def start(self):
@@ -236,7 +248,6 @@ class StateMachine:
         self.cur_state.draw(self.player)
 
 
-
 class Player:
     image = None
     racket_image = None
@@ -251,6 +262,9 @@ class Player:
         self.face_dir = '오른쪽'  # 바라보는 방향 (방향 파악)
         self.move_dir = 0  # 바라보는 방향 (이미지 위치)
 
+        self.racket_rad = 0.0
+        self.racket_swing = False
+
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
 
@@ -259,12 +273,26 @@ class Player:
 
     def update(self):
         self.state_machine.update()
+        if self.racket_swing:
+            self.racket_rad -= 1.0
+            if self.racket_rad < 0.0:
+                self.racket_swing = False
+                self.racket_rad = 360
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))
+        if e.type == SDL_KEYUP and e.key == SDLK_SPACE:
+            print('SPACE 입력')
+            if not self.racket_swing:
+                self.racket_swing = True
+
+
 
     def draw(self):
         self.state_machine.draw()
+        Player.racket_image.clip_composite_draw(0, 0, 512, 512, radians(self.racket_rad + 90.0), ''
+                                                , self.x + 35 * cos(radians(self.racket_rad + 135.0))
+                                                , self.y + 35 * sin(radians(self.racket_rad+ 135.0)), 70, 70);
         draw_rectangle(*self.get_bb())
         pass
 
