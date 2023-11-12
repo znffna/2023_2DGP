@@ -40,6 +40,7 @@ def init():
     stadium = Stadium()
     game_world.add_object(stadium)
     game_world.add_collision_pair('player:net', None, stadium)
+    game_world.add_collision_pair('shuttle:net', None, stadium)
 
     racket = Racket()
     game_world.add_object(racket, 1)
@@ -52,6 +53,7 @@ def init():
     shuttle = Shuttle()
     game_world.add_object(shuttle, 2)
     game_world.add_collision_pair('racket:shuttle', None, shuttle)
+    game_world.add_collision_pair('shuttle:net', shuttle, None)
 
     pass
 

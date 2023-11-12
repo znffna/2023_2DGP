@@ -67,4 +67,8 @@ class Shuttle:
                 self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
                 self.degree = other.racket_rad + 90.0
                 self.cooldown = get_time()
+        if group == 'shuttle:net':
+            self.velocity[0] *= -0.5
+            self.accelate[0] *= -1
+            self.velocity[1] = -400.0
         pass
