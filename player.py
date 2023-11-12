@@ -44,6 +44,10 @@ def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
 
+def a_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_a
+
+
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
@@ -61,6 +65,13 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
+
+# Player Jump Speed
+JUMP_SPEED_MPS = 30.0
+JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
+TIME_PER_JUMP = 0.7
+JUMP_PER_TIME = 1.0 / TIME_PER_JUMP
+
 
 
 # 상태에 대한 클래스
@@ -212,21 +223,54 @@ class MoveDiagonal:  # 대각선 이동 중
         pass
 
 
+class Jump:
+    @staticmethod
+    def enter(player, e):
+        player.jump_time = get_time()  # pico2d import 필요
+        player.current_time = player.jump_time
+        pass
+
+    @staticmethod
+    def exit(player, e):
+        player.height = 0
+        pass
+
+    @staticmethod
+    def do(player):
+        current_time = get_time() - player.jump_time
+
+        if current_time > TIME_PER_JUMP:
+            player.state_machine.handle_event(('TIME_OUT', 0))
+        if player.current_time < TIME_PER_JUMP / 2.0:
+            player.height += JUMP_SPEED_PPS * game_framework.frame_time
+
+        player.current_time = current_time
+        pass
+
+    @staticmethod
+    def draw(player):
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        pass
+
+
 class StateMachine:
     def __init__(self, player):
         self.player = player
         self.cur_state = Idle
         self.transitions = {
             Idle: {right_down: MoveHorizon, left_down: MoveHorizon, right_up: MoveHorizon, left_up: MoveHorizon,
-                   up_down: MoveVertical, down_up: MoveVertical, down_down: MoveVertical, up_up: MoveVertical},
+                   up_down: MoveVertical, down_up: MoveVertical, down_down: MoveVertical, up_up: MoveVertical
+                , a_down: Jump},
             MoveHorizon: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle
-                , up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal},
+                , up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal,
+                          a_down: Jump},
             MoveVertical: {right_down: MoveDiagonal, left_down: MoveDiagonal, right_up: MoveDiagonal,
                            left_up: MoveDiagonal
-                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle},
+                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, a_down: Jump},
             MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical,
                            left_up: MoveVertical
-                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon},
+                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon, a_down: Jump},
+            Jump: {time_out : Idle}
         }
 
     def start(self):
@@ -270,7 +314,6 @@ class Player:
         self.state_machine.update()
         self.racket.x = self.x
         self.racket.y = self.y
-
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))

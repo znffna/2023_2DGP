@@ -42,6 +42,7 @@ class Swing:  # 가만히 있음
 
     @staticmethod
     def exit(racket, e):
+        racket.racket_rad = 0
         pass
 
     @staticmethod
@@ -115,7 +116,12 @@ class Racket:
         pass
 
     def get_bb(self):
-        return self.x - 35, self.y - 40, self.x + 35, self.y + 40
+        now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + 135.0))
+        now_y = self.y + 1.5 * 35 * sin(radians(self.racket_rad + 135.0))
+
+        return now_x - 20, now_y - 20, now_x + 20, now_y + 20
+
+
 
     def handle_collision(self, group, other):
         if group == 'racket:shuttle':
