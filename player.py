@@ -93,7 +93,7 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
         pass
 
 
@@ -128,7 +128,7 @@ class MoveHorizon:  # 좌우 이동 중
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
         pass
 
 
@@ -163,7 +163,7 @@ class MoveVertical:  # 상하 이동 중
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 78, player.x, player.y);
         pass
 
 
@@ -198,7 +198,7 @@ class MoveDiagonal:  # 대각선 이동 중
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 70, player.x, player.y);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
         pass
 
 
@@ -241,7 +241,7 @@ class Player:
     image = None
 
     def __init__(self):
-        self.x, self.y = 400, 60
+        self.x, self.y = 300, 60
         self.frame = 0
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
@@ -267,7 +267,14 @@ class Player:
         return self.x - 35, self.y - 40, self.x + 35, self.y + 40
 
     def handle_collision(self, group, other):
-        if group == 'boy:ball':
-            self.ball_count += 1
-        if group == 'boy:zombie':
-            game_framework.quit()
+        if group == 'player:net':
+            if self.x < other.x:
+                self.x = clamp(0, self.x, other.x - 20)
+            else:
+                self.x = clamp(other.x + 10, self.x, 800)
+            pass
+        # if group == 'boy:ball':
+        #     self.ball_count += 1
+        # if group == 'boy:zombie':
+        #     game_framework.quit()
+        pass

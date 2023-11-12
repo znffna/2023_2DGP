@@ -29,9 +29,12 @@ def init():
 
     stadium = Stadium()
     game_world.add_object(stadium)
+    game_world.add_collision_pair('player:net', None, stadium)
+
 
     player = Player()
     game_world.add_object(player, 1)
+    game_world.add_collision_pair('player:net', player, None)
 
 
     pass
@@ -44,6 +47,7 @@ def finish():
 
 def update():
     game_world.update()
+    game_world.handle_collisions()
     # fill here
 
 
