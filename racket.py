@@ -25,8 +25,6 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def do(racket):
-        racket.x = racket.player.x
-        racket.y = racket.player.y
         pass
 
     @staticmethod
@@ -48,8 +46,6 @@ class Swing:  # 가만히 있음
 
     @staticmethod
     def do(racket):
-        racket.x = racket.player.x
-        racket.y = racket.player.y
         racket.racket_rad -= 360.0 * SWING_PER_SECOND * game_framework.frame_time  # 0.75초에 1바퀴 회전이 되도록.
         if get_time() - racket.wait_time > SWING_TIME:
             racket.state_machine.handle_event(('TIME_OUT', 0))
@@ -96,10 +92,8 @@ class StateMachine:
 
 class Racket:
     image = None
-
-    def __init__(self, player):
-        self.player = player
-        self.x, self.y = player.x, player.y
+    def __init__(self):
+        self.x, self.y = 0, 0
         self.racket_rad = 0.0
         self.racket_swing = False
         self.state_machine = StateMachine(self)

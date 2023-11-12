@@ -12,7 +12,6 @@ from stadium import Stadium
 def handle_events():
     global running
     global player
-    global racket
 
     events = get_events()
     for event in events:
@@ -22,7 +21,6 @@ def handle_events():
             game_framework.quit()
         else:
             player.handle_event(event)
-            racket.handle_event(event)
             pass
     pass
 
@@ -37,20 +35,17 @@ def init():
     game_world.add_object(stadium)
     game_world.add_collision_pair('player:net', None, stadium)
 
-
-    player = Player()
-    game_world.add_object(player, 1)
-    game_world.add_collision_pair('player:net', player, None)
-
-    racket = Racket(player)
+    racket = Racket()
     game_world.add_object(racket, 1)
     game_world.add_collision_pair('racket:shuttle', racket, None)
+
+    player = Player(racket)
+    game_world.add_object(player, 1)
+    game_world.add_collision_pair('player:net', player, None)
 
     shuttle = Shuttle()
     game_world.add_object(shuttle, 2)
     game_world.add_collision_pair('racket:shuttle', None, shuttle)
-
-
 
     pass
 

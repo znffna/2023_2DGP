@@ -126,6 +126,7 @@ class MoveHorizon:  # 좌우 이동 중
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
         # player.x = clamp(35, player.x, 800 - 35)
+
         pass
 
     @staticmethod
@@ -250,9 +251,9 @@ class StateMachine:
 
 class Player:
     image = None
-    racket_image = None
 
-    def __init__(self):
+    def __init__(self, racket):
+        self.racket = racket
         self.x, self.y = 300, 60
         self.height = 0
         self.frame = 0
@@ -262,23 +263,18 @@ class Player:
         self.face_dir = '오른쪽'  # 바라보는 방향 (방향 파악)
         self.move_dir = 0  # 바라보는 방향 (이미지 위치)
 
-
-
-        self.racket_rad = 0.0
-        self.racket_swing = False
-
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
 
-        if Player.racket_image == None:
-            Player.racket_image = load_image('resource/badmintonRacket.png')
-
     def update(self):
         self.state_machine.update()
+        self.racket.x = self.x
+        self.racket.y = self.y
 
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))
+        self.racket.state_machine.handle_event(('INPUT', e))
 
     def draw(self):
         self.state_machine.draw()
