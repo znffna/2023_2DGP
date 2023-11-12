@@ -262,6 +262,8 @@ class Player:
         self.face_dir = '오른쪽'  # 바라보는 방향 (방향 파악)
         self.move_dir = 0  # 바라보는 방향 (이미지 위치)
 
+
+
         self.racket_rad = 0.0
         self.racket_swing = False
 
@@ -273,26 +275,13 @@ class Player:
 
     def update(self):
         self.state_machine.update()
-        if self.racket_swing:
-            self.racket_rad -= 1.0
-            if self.racket_rad < 0.0:
-                self.racket_swing = False
-                self.racket_rad = 360
+
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))
-        if e.type == SDL_KEYUP and e.key == SDLK_SPACE:
-            print('SPACE 입력')
-            if not self.racket_swing:
-                self.racket_swing = True
-
-
 
     def draw(self):
         self.state_machine.draw()
-        Player.racket_image.clip_composite_draw(0, 0, 512, 512, radians(self.racket_rad + 90.0), ''
-                                                , self.x + 35 * cos(radians(self.racket_rad + 135.0))
-                                                , self.y + 35 * sin(radians(self.racket_rad+ 135.0)), 70, 70);
         draw_rectangle(*self.get_bb())
         pass
 
@@ -306,8 +295,3 @@ class Player:
             else:
                 self.x = clamp(other.x + 10, self.x, 800)
             pass
-        # if group == 'boy:ball':
-        #     self.ball_count += 1
-        # if group == 'boy:zombie':
-        #     game_framework.quit()
-        pass
