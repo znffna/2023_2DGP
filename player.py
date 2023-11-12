@@ -236,11 +236,14 @@ class StateMachine:
         self.cur_state.draw(self.player)
 
 
+
 class Player:
     image = None
+    racket_image = None
 
     def __init__(self):
         self.x, self.y = 300, 60
+        self.height = 0
         self.frame = 0
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
@@ -250,6 +253,9 @@ class Player:
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
+
+        if Player.racket_image == None:
+            Player.racket_image = load_image('resource/badmintonRacket.png')
 
     def update(self):
         self.state_machine.update()
