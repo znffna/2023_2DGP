@@ -67,7 +67,7 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
 
 # Player Jump Speed
-JUMP_SPEED_MPS = 30.0
+JUMP_SPEED_MPS = 10.0
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_JUMP = 0.7
 JUMP_PER_TIME = 1.0 / TIME_PER_JUMP
@@ -228,11 +228,12 @@ class Jump:
     def enter(player, e):
         player.jump_time = get_time()  # pico2d import 필요
         player.current_time = player.jump_time
+        player.height = player.z
         pass
 
     @staticmethod
     def exit(player, e):
-        player.z = 0
+        player.z = player.height
         pass
 
     @staticmethod
@@ -241,8 +242,10 @@ class Jump:
 
         if current_time > TIME_PER_JUMP:
             player.state_machine.handle_event(('TIME_OUT', 0))
-        if player.current_time < TIME_PER_JUMP / 2.0:
+        elif player.current_time < TIME_PER_JUMP / 2.0:
             player.z += JUMP_SPEED_PPS * game_framework.frame_time
+        else:
+            player.z -= JUMP_SPEED_PPS * game_framework.frame_time
 
         player.current_time = current_time
         pass

@@ -1,4 +1,4 @@
-from math import radians, atan, degrees
+from math import radians, atan, degrees, cos, sin
 
 from pico2d import *
 
@@ -19,12 +19,13 @@ class Shuttle:
 
     def __init__(self):
         self.x, self.y, self.z = 300, 30, 400
-
         self.velocity = [0.0, 0.0]
         self.accelate = [0.0, -9.8]
 
+        self.cooldown = get_time()
         self.size = 20
         self.degree = 0.0
+
 
         if Shuttle.image == None:
             Shuttle.image = load_image('resource/shuttle.png')  # 200 x 225 size
@@ -35,6 +36,8 @@ class Shuttle:
 
         self.velocity[0] += self.accelate[0] * PIXEL_PER_METER * game_framework.frame_time
         self.velocity[1] += self.accelate[1] * PIXEL_PER_METER * game_framework.frame_time
+        if self.velocity[0] != 0:
+            self.degree = get_degree(self.velocity[1]/self.velocity[0]) + 90.0
 
         self.x = clamp(0, self.x, 800)
         self.z = clamp(0, self.z, 600)
@@ -59,8 +62,9 @@ class Shuttle:
 
     def handle_collision(self, group, other):
         if group == 'racket:shuttle' and other.state_machine.cur_state == Swing:
-            self.velocity[0] = 400.0
-            self.velocity[1] = 400.0
-
-            pass
+            if get_time() - self.cooldown > 0.5:
+                self.velocity[0] = 400.0 * cos(radians(other.racket_rad + 90.0))
+                self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
+                self.degree = other.racket_rad + 90.0
+                self.cooldown = get_time()
         pass
