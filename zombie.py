@@ -56,7 +56,7 @@ class Zombie:
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
         # fill here
-
+        self.bt.run()
 
     def draw(self):
         if math.cos(self.dir) < 0:
@@ -77,20 +77,30 @@ class Zombie:
 
     def set_target_location(self, x=None, y=None):
         if not x or not y:
-            pass
-        pass
+            raise ValueError('위치 지정을 해야 합니다.')
+        self.tx, self.ty = x, y
+        return BehaviorTree.SUCCESS
 
     def distance_less_than(self, x1, y1, x2, y2, r):
-        pass
+        distance2 = (x1 - x2) **2 + (y1 - y2) ** 2
+        return distance2 < (PIXEL_PER_METER) ** 2
 
     def move_slightly_to(self, tx, ty):
-        pass
+        self.dir = math.atan2(ty - self.y, tx - self.x)
+        self.speed = RUN_SPEED_PPS
+        self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
+        self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
 
     def move_to(self, r=0.5):
-        pass
+        self.move_slightly_to(self.tx, self.ty)
+        if self.distance_less_than(self.tx, self.ty, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
 
     def set_random_location(self):
-        pass
+        self.tx, self.ty = random.randint(100, 1280 - 100), random.randint(100, 1024 - 100)
+        return BehaviorTree.SUCCESS
 
     def is_boy_nearby(self, distance):
         pass
@@ -102,4 +112,12 @@ class Zombie:
         pass
 
     def build_behavior_tree(self):
+        a1 = Action('set target location', self.set_target_location, 500, 50) # action node 생성
+        a2 = Action('Move to', self.move_to)
+
+        SEQ_move_to_target_location = Sequence('Move to target location', a1, a2)
+        a3 = Action('Set random location', self.set_random_location)
+
+        root = SEQ_wander = Sequence('Wander', a3, a2)
+        self.bt = BehaviorTree(root)
         pass
