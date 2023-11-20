@@ -137,13 +137,33 @@ class Zombie:
 
         return BehaviorTree.RUNNING
 
+    def is_ball_nearby(self, r):
+        for ball in play_mode.balls:
+            if self.distance_less_than(ball.x, ball.y, self.x, self.y, r):
+                return BehaviorTree.SUCCESS
+        return BehaviorTree.FAIL
+
+    def move_to_ball(self, r=3):
+        self.state = 'Walk'
+        # self.move_slightly_to(play_mode.boy.x, play_mode.boy.y)
+        selected_ball = None
+        max_len = r
+
+        for ball in play_mode.balls:
+            if self.distance_less_than(ball.x, ball.y, self.x, self.y, max_len):
+                max_len = math.sqrt((ball.x - self.x) ** 2 + (ball.y - self.y) ** 2)
+
+        if self.distance_less_than(play_mode.boy.x, play_mode.boy.y, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
     def build_behavior_tree(self):
         a4 = Action('접근', self.move_to_boy)
 
         a6 = Action("도망", self.flee)
         c2 = Condition('좀비가 약한가?', self.is_weak)
         SEQ_flee = Sequence("flee", c2, a6)
-
 
         SEL_flee_or_chase = Selector('도망치거나 추격', SEQ_flee, a4)
 
@@ -160,11 +180,14 @@ class Zombie:
         SEQ_chase_boy = Sequence('근처에 있으면 도망 또는 소년을 추적', c1, SEL_flee_or_chase)
 
         a5 = Action('순찰 위치 가져오기', self.get_patrol_location)
-        SEQ_patrol = Sequence('순찰', a5, a2)
 
-        root = SEL_chase_or_flee = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_wander)
+        c3 = Condition('공이 3미터 주변에 있는가?', self.is_ball_nearby, 3)
+        a7 = Action('공을 추적', self.move_to_ball)
+        SEQ_chase_ball = Sequence('근처에 있으면 공을 추적', c3, a7)
+        SEQ_patrol = Sequence('기본 순찰 루트 순찰', a5, a2)
 
+        SEQ_patrol_control = Selector('순찰 방법 선택[볼, 루트]', SEQ_chase_ball, SEQ_patrol)
 
-
+        root = SEL_chase_or_flee = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_patrol_control)
 
         self.bt = BehaviorTree(root)
