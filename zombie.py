@@ -138,6 +138,17 @@ class Zombie:
         return BehaviorTree.RUNNING
 
     def build_behavior_tree(self):
+        a4 = Action('접근', self.move_to_boy)
+
+        a6 = Action("도망", self.flee)
+        c2 = Condition('좀비가 약한가?', self.is_weak)
+        SEQ_flee = Sequence("flee", c2, a6)
+
+
+        SEL_flee_or_chase = Selector('도망치거나 추격', SEQ_flee, a4)
+
+        # root = SEQ_flee = Sequence("flee", a6)
+
         a1 = Action('Set target location', self.set_target_location, 500, 50)
         a2 = Action('Move to', self.move_to)
         root = SEQ_move_to_target_location = Sequence('Move to target location', a1, a2)
@@ -146,18 +157,14 @@ class Zombie:
         root = SEQ_wander = Sequence('Wander', a3, a2)
 
         c1 = Condition('소년이 근처에 있는가?', self.is_boy_nearby, 7)
-        a4 = Action('접근', self.move_to_boy)
-        root = SEQ_chase_boy = Sequence('소년을 추적', c1, a4)
+        SEQ_chase_boy = Sequence('근처에 있으면 도망 또는 소년을 추적', c1, SEL_flee_or_chase)
 
         a5 = Action('순찰 위치 가져오기', self.get_patrol_location)
         SEQ_patrol = Sequence('순찰', a5, a2)
 
         root = SEL_chase_or_flee = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_wander)
 
-        a6 = Action("도망", self.flee)
-        root = SEQ_flee = Sequence("flee", a6)
 
-        c2 = Condition('좀비가 약한가?', self.is_weak)
-        root = SEQ_flee = Sequence("flee", c2, a6)
+
 
         self.bt = BehaviorTree(root)
