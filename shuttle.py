@@ -18,6 +18,7 @@ class Shuttle:
     image = None
 
     def __init__(self):
+        self.last_touch = None
         self.x, self.y, self.z = 300, 30, 400
         self.velocity = [0.0, 0.0]
         self.accelate = [0.0, -9.8]
@@ -61,12 +62,13 @@ class Shuttle:
         return self.x - self.size, self.y + self.z - self.size, self.x + self.size, self.y + self.z + self.size
 
     def handle_collision(self, group, other):
-        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing:
+        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing and self.last_touch != other:
             if get_time() - self.cooldown > 0.5:
                 self.velocity[0] = 400.0 * cos(radians(other.racket_rad + 90.0))
                 self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
                 self.degree = other.racket_rad + 90.0
                 self.cooldown = get_time()
+                self.last_touch = other
         if group == 'shuttle:net':
             self.velocity[0] *= -0.5
             self.accelate[0] *= -1
