@@ -12,7 +12,7 @@ def time_out(e):
 
 
 # 상태에 대한 클래스
-SWING_TIME = 0.75  # 0.75초에 1번 스윙
+SWING_TIME = 0.4  # 1번 스윙에 걸리는 시간
 SWING_PER_SECOND = 1 / SWING_TIME  # 초당 스윙 횟수
 class Idle:  # 가만히 있음
     @staticmethod
@@ -34,7 +34,7 @@ class Idle:  # 가만히 있음
                                          , racket.z + 35 * sin(radians(135.0)), 70, 70);
 
 
-class Swing:  # 가만히 있음
+class Swing:  # 라켓을 휘두름.
     @staticmethod
     def enter(racket, e):
         racket.wait_time = get_time()  # pico2d import 필요
