@@ -16,7 +16,7 @@ PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 
 class Shuttle:
     image = None
-
+    shadow_image = None
     def __init__(self):
         self.last_touch = None
         self.x, self.y, self.z = 300, 30, 400
@@ -27,9 +27,10 @@ class Shuttle:
         self.size = 20
         self.degree = 0.0
 
-
         if Shuttle.image == None:
             Shuttle.image = load_image('resource/shuttle.png')  # 200 x 225 size
+        if Shuttle.shadow_image == None:
+            Shuttle.shadow_image = load_image('resource/shuttle_shadow.png')  # 200 x 225 size
 
     def update(self):
         self.x += self.velocity[0] * game_framework.frame_time
@@ -53,13 +54,19 @@ class Shuttle:
             pass
 
     def draw(self):
+        Shuttle.shadow_image.clip_composite_draw(0, 0, 200, 200, 0, ''
+                                          , self.x, self.y - 5, self.size, self.size)
         Shuttle.image.clip_composite_draw(0, 0, 200, 225, radians(self.degree), ''
                                           , self.x, self.y + self.z, self.size, self.size)
         draw_rectangle(*self.get_bb())
+
         # self.image.draw(1200, 30)
 
     def get_bb(self):  # shuttle size
         return self.x - self.size, self.y + self.z - self.size, self.x + self.size, self.y + self.z + self.size
+
+    def get_shadow(self):
+        return self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size
 
     def handle_collision(self, group, other):
         if group == 'racket:shuttle' and other.state_machine.cur_state == Swing and self.last_touch != other:
