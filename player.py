@@ -79,24 +79,16 @@ JUMP_PER_TIME = 1.0 / TIME_PER_JUMP
 class Idle:  # 가만히 있음
     @staticmethod
     def enter(player, e):
-        if player.face_dir == '왼쪽':
-            player.move_dir = 2
-        elif player.face_dir == '오른쪽':
-            player.move_dir = 1
-        elif player.face_dir == '위쪽':
-            player.move_dir = 0
-        elif player.face_dir == '아래쪽':
-            player.move_dir = 3
-        # player.move_dir -= 4
-
         player.LR_dir = 0
         player.TB_dir = 0
         player.frame = 6
+        player.move_dir = 1  # 바라보는 방향 (이미지 위치)
         # player.wait_time = get_time()  # pico2d import 필요
         pass
 
     @staticmethod
     def exit(player, e):
+        player.move_dir = 5  # 바라보는 방향 (이미지 위치)
         pass
 
     @staticmethod
@@ -115,16 +107,9 @@ class MoveHorizon:  # 좌우 이동 중
     def enter(player, e):
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = 1, 5, '오른쪽'
+            player.LR_dir, player.face_dir = 1, '오른쪽'
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = -1, 6, '왼쪽'
-        elif up_down(e) or down_up(e) or down_down(e) or up_up(e):
-            if player.LR_dir == 1:
-                player.move_dir, player.face_dir = 5, '오른쪽'
-            else:
-                player.move_dir, player.face_dir = 6, '왼쪽'
-
-        pass
+            player.LR_dir, player.face_dir = -1, '왼쪽'
 
     @staticmethod
     def exit(player, e):
@@ -151,14 +136,9 @@ class MoveVertical:  # 상하 이동 중
     def enter(player, e):
         player.frame = 0
         if up_down(e) or down_up(e):  # 위쪽으로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = 1, 4, '위쪽'
+            player.TB_dir, player.face_dir = 1, '위쪽'
         elif down_down(e) or up_up(e):  # 아래로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = -1, 7, '아래쪽'
-        elif right_down(e) or left_up(e) or left_down(e) or right_up(e):
-            if player.TB_dir == 1:
-                player.move_dir, player.face_dir = 4, '위쪽'
-            else:
-                player.move_dir, player.face_dir = 7, '아래쪽'
+            player.TB_dir, player.face_dir = -1, '아래쪽'
 
     @staticmethod
     def exit(player, e):
@@ -184,13 +164,13 @@ class MoveDiagonal:  # 대각선 이동 중
     def enter(player, e):
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = 1, 5, '오른쪽'
+            player.LR_dir, player.face_dir = 1, '오른쪽'
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
-            player.LR_dir, player.move_dir, player.face_dir = -1, 6, '왼쪽'
+            player.LR_dir, player.face_dir = -1, '왼쪽'
         elif up_down(e) or down_up(e):  # 위쪽으로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = 1, 4, '위쪽'
+            player.TB_dir, player.face_dir = 1, '위쪽'
         elif down_down(e) or up_up(e):  # 아래로 RUN
-            player.TB_dir, player.move_dir, player.face_dir = -1, 7, '아래쪽'
+            player.TB_dir, player.face_dir = -1, '아래쪽'
         pass
 
     @staticmethod
@@ -308,7 +288,7 @@ class Player:
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         self.face_dir = '오른쪽'  # 바라보는 방향 (방향 파악)
-        self.move_dir = 0  # 바라보는 방향 (이미지 위치)
+        self.move_dir = 5  # 바라보는 방향 (이미지 위치)
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
