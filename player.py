@@ -279,16 +279,21 @@ class StateMachine:
 class Player:
     image = None
 
-    def __init__(self, racket):
+    def __init__(self, racket, dir):
         self.racket = racket
-        self.x, self.z = 300, 60
         self.height = 0
-        self.frame = 0
+        self.frame = 6
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
-        self.face_dir = '오른쪽'  # 바라보는 방향 (방향 파악)
-        self.move_dir = 5  # 바라보는 방향 (이미지 위치)
+        if dir == '오른쪽':
+            self.x, self.z = 300, 60
+            self.face_dir = dir  # 바라보는 방향 (방향 파악)
+            self.move_dir = 1  # 바라보는 방향 (이미지 위치)
+        elif dir == '왼쪽':
+            self.x, self.z = 800 - 300, 60
+            self.face_dir = dir  # 바라보는 방향 (방향 파악)
+            self.move_dir = 2  # 바라보는 방향 (이미지 위치)
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트

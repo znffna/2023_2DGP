@@ -4,8 +4,10 @@ from pico2d import *
 
 import game_framework
 
+
 def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
+
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
@@ -14,6 +16,8 @@ def time_out(e):
 # 상태에 대한 클래스
 SWING_TIME = 0.4  # 1번 스윙에 걸리는 시간
 SWING_PER_SECOND = 1 / SWING_TIME  # 초당 스윙 횟수
+
+
 class Idle:  # 가만히 있음
     @staticmethod
     def enter(racket, e):
@@ -29,9 +33,9 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def draw(racket):
-        Racket.image.clip_composite_draw(0, 0, 512, 512, radians(90.0), ''
-                                         , racket.x + 35 * cos(radians(135.0))
-                                         , racket.z + 35 * sin(radians(135.0)), 70, 70);
+        Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.default_rad), ''
+                                         , racket.x + 35 * cos(radians(racket.default_rad + 45.0))
+                                         , racket.z + 35 * sin(radians(racket.default_rad + 45.0)), 70, 70);
 
 
 class Swing:  # 라켓을 휘두름.
@@ -54,12 +58,11 @@ class Swing:  # 라켓을 휘두름.
 
     @staticmethod
     def draw(racket):
-        Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.racket_rad + 90.0), ''
-                                         , racket.x + 35 * cos(radians(racket.racket_rad + 135.0))
-                                         , racket.z + 35 * sin(radians(racket.racket_rad + 135.0)), 70, 70);
+        Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.racket_rad + racket.default_rad), ''
+                                         , racket.x + 35 * cos(radians(racket.racket_rad + racket.default_rad + 45.0))
+                                         , racket.z + 35 * sin(radians(racket.racket_rad + racket.default_rad + 45.0))
+                                         , 70, 70);
         pass
-
-
 
 
 class StateMachine:
@@ -93,8 +96,10 @@ class StateMachine:
 
 class Racket:
     image = None
-    def __init__(self):
+
+    def __init__(self, rad=0.0):
         self.x, self.z = 0, 0
+        self.default_rad = rad
         self.racket_rad = 0.0
         self.racket_swing = False
         self.state_machine = StateMachine(self)
@@ -111,17 +116,14 @@ class Racket:
 
     def draw(self):
         self.state_machine.draw()
-
         draw_rectangle(*self.get_bb())
         pass
 
     def get_bb(self):
-        now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + 135.0))
-        now_y = self.z + 1.5 * 35 * sin(radians(self.racket_rad + 135.0))
+        now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + self.default_rad + 45.0))
+        now_y = self.z + 1.5 * 35 * sin(radians(self.racket_rad + self.default_rad + 45.0))
 
         return now_x - 20, now_y - 20, now_x + 20, now_y + 20
-
-
 
     def handle_collision(self, group, other):
         if group == 'racket:shuttle':
