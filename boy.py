@@ -304,4 +304,8 @@ class Boy:
 
     # fill here
     def handle_collision(self, group, other):
+        if group == 'boy:ball':
+            self.ball_count += 1
+            print(f'캐릭터가 공을 먹음 : {self.ball_count=}')
+
         pass

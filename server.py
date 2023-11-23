@@ -2,3 +2,4 @@
 
 boy = None
 background = None
+balls = None
