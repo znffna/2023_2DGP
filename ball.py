@@ -23,5 +23,5 @@ class Ball:
         return self.x - 10, self.y - 10, self.x + 10, self.y + 10
 
     def handle_collision(self, group, other):
-	pass
+	    pass
 
