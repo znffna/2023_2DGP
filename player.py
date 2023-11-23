@@ -3,6 +3,8 @@ from math import radians, cos, sin
 from pico2d import *
 
 import game_framework
+import game_world
+from racket import Racket
 
 
 # state event check
@@ -279,18 +281,25 @@ class StateMachine:
 class Player:
     image = None
 
-    def __init__(self, racket, dir):
-        self.racket = racket
+    def __init__(self, dir):
         self.height = 0
         self.frame = 6
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         if dir == '오른쪽':
+            self.racket = Racket(90.0)
+            game_world.add_object(self.racket, 1)
+            game_world.add_collision_pair('racket:shuttle', self.racket, None)
+
             self.x, self.z = 300, 60
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 1  # 바라보는 방향 (이미지 위치)
         elif dir == '왼쪽':
+            self.racket = Racket(0.0)
+            game_world.add_object(self.racket, 1)
+            game_world.add_collision_pair('racket:shuttle', self.racket, None)
+
             self.x, self.z = 800 - 300, 60
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 2  # 바라보는 방향 (이미지 위치)

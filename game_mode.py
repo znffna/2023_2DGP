@@ -42,16 +42,11 @@ def init():
     game_world.add_collision_pair('player:net', None, stadium)
     game_world.add_collision_pair('shuttle:net', None, stadium)
 
-    rackets = [Racket(90 * (1-i)) for i in range(2)]
-    for racket in rackets:
-        game_world.add_object(racket, 1)
-        game_world.add_collision_pair('racket:shuttle', racket, None)
-
-    player = Player(rackets[0], '오른쪽')
+    player = Player('오른쪽')
     game_world.add_object(player, 1)
     game_world.add_collision_pair('player:net', player, None)
 
-    ai_player = Player(rackets[1], '왼쪽')
+    ai_player = Player('왼쪽')
     game_world.add_object(ai_player, 1)
     game_world.add_collision_pair('player:net', ai_player, None)
 
