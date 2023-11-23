@@ -290,8 +290,10 @@ class Boy:
 
     def draw(self):
         # fill here
-        sx, sy = get_canvas_width() // 2, get_canvas_height() // 2
         # 소년을 화면 한가운데 그림.
+        # sx, sy = get_canvas_width() // 2, get_canvas_height() // 2
+        sx = self.x - server.background.window_left
+        sy = self.y - server.background.window_bottom
         self.image.clip_draw(int(self.frame) * 100, self.action * 100, 100, 100, sx, sy)
         pass
 
