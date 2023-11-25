@@ -3,7 +3,9 @@ from math import radians, cos, sin
 from pico2d import *
 
 import game_framework
+import game_mode
 import game_world
+from behavior_tree import BehaviorTree, Sequence, Condition, Action
 from racket import Racket
 
 
@@ -280,6 +282,7 @@ class StateMachine:
 
 class Player:
     image = None
+    shadow_image = None
 
     def __init__(self, dir):
         self.height = 0
@@ -287,6 +290,8 @@ class Player:
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
+        self.build_behavior_tree()
+
         if dir == '오른쪽':
             self.racket = Racket(90.0)
             game_world.add_object(self.racket, 1)
@@ -295,6 +300,7 @@ class Player:
             self.x, self.z = 300, 60
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 1  # 바라보는 방향 (이미지 위치)
+
         elif dir == '왼쪽':
             self.racket = Racket(0.0)
             game_world.add_object(self.racket, 1)
@@ -306,6 +312,8 @@ class Player:
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
+        if Player.shadow_image == None:
+            Player.shadow_image = load_image('resource/shuttle_shadow.png')  # 200 x 225 size
 
     def update(self):
         self.state_machine.update()
@@ -331,3 +339,42 @@ class Player:
             else:
                 self.x = clamp(other.x + 10, self.x, 800)
             pass
+
+    def distance_less_than(self, x1, y1, x2, y2, r):
+        distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
+        return distance2 < (PIXEL_PER_METER * r) ** 2
+
+    def is_last_touching(self):  # 내가 마지막으로 쳤다면 SUCCESS
+        if game_mode.shuttle.last_touch == self.racket:
+            return BehaviorTree.SUCCESS
+        return BehaviorTree.FAIL
+
+    def move_slightly_to(self, tx, ty):
+        self.dir = math.atan2(ty - self.y, tx - self.x)
+        self.speed = RUN_SPEED_PPS
+        self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
+        self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
+
+    pass
+    def move_to_shuttle(self, r= 0.5):
+        game_mode.shuttle.x, game_mode.shuttle.y
+        if self.distance_less_than(game_mode.shuttle.x, game_mode.shuttle.y, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+    def swing_racket(self):
+        if self.racket.state_machine is not Racket.SWING:
+            self.racket.state_machine = Racket.SWING
+            return BehaviorTree.SUCCESS
+        return BehaviorTree.FAIL
+
+    def build_behavior_tree(self):
+
+        a2 = Action('라켓을 휘두른다', self.swing_racket)
+        c1 = Condition('마지막으로 친 상대가 나인가?', self.is_last_touching)
+        a1 = Action('셔틀콕을 향해 이동', self.move_to_shuttle(0.5))
+
+        SEQ_ATTACK = Sequence('마지막으로 친 상대가 나인가?', c1, a1, a2)
+        # root = SEL_ATTACK_or_DEFEND = Selector('공격 또는 수비', SEQ_ATTACK, SEQ_patrol_control)
+        # self.bt = BehaviorTree(root)
