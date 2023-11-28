@@ -42,6 +42,11 @@ def init():
     game_world.add_collision_pair('player:net', None, stadium)
     game_world.add_collision_pair('shuttle:net', None, stadium)
 
+    shuttle = Shuttle()
+    game_world.add_object(shuttle, 2)
+    game_world.add_collision_pair('racket:shuttle', None, shuttle)
+    game_world.add_collision_pair('shuttle:net', shuttle, None)
+
     player = Player('오른쪽')
     game_world.add_object(player, 1)
     game_world.add_collision_pair('player:net', player, None)
@@ -50,10 +55,7 @@ def init():
     game_world.add_object(ai_player, 1)
     game_world.add_collision_pair('player:net', ai_player, None)
 
-    shuttle = Shuttle()
-    game_world.add_object(shuttle, 2)
-    game_world.add_collision_pair('racket:shuttle', None, shuttle)
-    game_world.add_collision_pair('shuttle:net', shuttle, None)
+
 
     pass
 

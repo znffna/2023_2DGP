@@ -5,7 +5,7 @@ from pico2d import *
 import game_framework
 import game_mode
 import game_world
-from behavior_tree import BehaviorTree, Sequence, Condition, Action
+from behavior_tree import BehaviorTree, Sequence, Condition, Action, Selector
 from racket import Racket
 
 
@@ -285,13 +285,14 @@ class Player:
     shadow_image = None
 
     def __init__(self, dir):
+        self.x, self.y = 0, 0
         self.height = 0
         self.frame = 6
         self.state_machine = StateMachine(self)
         self.LR_dir = 0  # 좌우 이동하는 방향 (로직)
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         self.build_behavior_tree()
-
+        self.bt = None
         if dir == '오른쪽':
             self.racket = Racket(90.0)
             game_world.add_object(self.racket, 1)
@@ -309,6 +310,7 @@ class Player:
             self.x, self.z = 800 - 300, 60
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 2  # 바라보는 방향 (이미지 위치)
+            self.build_behavior_tree()
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
@@ -319,6 +321,8 @@ class Player:
         self.state_machine.update()
         self.racket.x = self.x
         self.racket.z = self.z
+        if self.bt:
+            self.bt.run()
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))
@@ -357,7 +361,7 @@ class Player:
 
     pass
     def move_to_shuttle(self, r= 0.5):
-        game_mode.shuttle.x, game_mode.shuttle.y
+        self.move_slightly_to(game_mode.shuttle.x, game_mode.shuttle.y)
         if self.distance_less_than(game_mode.shuttle.x, game_mode.shuttle.y, self.x, self.y, r):
             return BehaviorTree.SUCCESS
         else:
@@ -365,16 +369,40 @@ class Player:
 
     def swing_racket(self):
         if self.racket.state_machine is not Racket.SWING:
-            self.racket.state_machine = Racket.SWING
+            self.racket.state_machine.handle_event('bt_swing', 0)
             return BehaviorTree.SUCCESS
-        return BehaviorTree.FAIL
+        else:
+            return BehaviorTree.FAIL
+
+    def is_on_right_side(self):
+        if game_mode.shuttle.x >= 400:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
+    def move_to_center(self, r = 0.3):
+        if self.distance_less_than(600, 50, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+    def is_shuttle_face_right(self):
+        if game_mode.shuttle.velocity[0] > 0:
+            return  BehaviorTree.SUCCESS
+        return BehaviorTree.RUNNING
+
 
     def build_behavior_tree(self):
 
-        a2 = Action('라켓을 휘두른다', self.swing_racket)
+        a1 = Action('라켓을 휘두른다', self.swing_racket)
         c1 = Condition('마지막으로 친 상대가 나인가?', self.is_last_touching)
-        a1 = Action('셔틀콕을 향해 이동', self.move_to_shuttle(0.5))
+        a2 = Action('셔틀콕을 향해 이동', self.move_to_shuttle(0.5))
+        c2 = Condition('셔틀콕이 내 코트쪽에 있는가?', self.is_on_right_side)
+        c3 = Condition('셔틀콕이 향하는 방향이 왼쪽인가?', self.is_shuttle_face_right)
 
-        SEQ_ATTACK = Sequence('마지막으로 친 상대가 나인가?', c1, a1, a2)
-        # root = SEL_ATTACK_or_DEFEND = Selector('공격 또는 수비', SEQ_ATTACK, SEQ_patrol_control)
-        # self.bt = BehaviorTree(root)
+        a3 = Action('코트의 중앙으로 이동', self.move_to_center(0.5))
+
+        SEQ_ATTACK = Sequence('마지막으로 친 상대가 나인가?', c2, c1, a2, a1)
+        SEQ_MOVE_CENTER = Sequence('코트의 중앙으로 이동', a3)
+        root = SEL_ATTACK_or_DEFEND = Selector('공격 또는 수비', SEQ_ATTACK, a3)
+        self.bt = BehaviorTree(root)

@@ -17,6 +17,7 @@ PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 class Shuttle:
     image = None
     shadow_image = None
+
     def __init__(self):
         self.last_touch = None
         self.x, self.y, self.z = 300, 30, 400
@@ -39,7 +40,7 @@ class Shuttle:
         self.velocity[0] += self.accelate[0] * PIXEL_PER_METER * game_framework.frame_time
         self.velocity[1] += self.accelate[1] * PIXEL_PER_METER * game_framework.frame_time
         if self.velocity[0] != 0:
-            self.degree = get_degree(self.velocity[1]/self.velocity[0]) + 90.0
+            self.degree = get_degree(self.velocity[1] / self.velocity[0]) + 90.0
 
         self.x = clamp(0, self.x, 800)
         self.z = clamp(0, self.z, 600)
@@ -55,7 +56,7 @@ class Shuttle:
 
     def draw(self):
         Shuttle.shadow_image.clip_composite_draw(0, 0, 200, 200, 0, ''
-                                          , self.x, self.y - 5, self.size, self.size)
+                                                 , self.x, self.y - 5, self.size, self.size)
         Shuttle.image.clip_composite_draw(0, 0, 200, 225, radians(self.degree), ''
                                           , self.x, self.y + self.z, self.size, self.size)
         draw_rectangle(*self.get_bb())

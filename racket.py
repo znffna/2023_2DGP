@@ -3,6 +3,7 @@ from math import radians, cos, sin
 from pico2d import *
 
 import game_framework
+import game_mode
 
 
 def space_down(e):
@@ -11,6 +12,9 @@ def space_down(e):
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
+
+def bt_swing(e):
+    return e[0] == 'bt_swing'
 
 
 # 상태에 대한 클래스
@@ -42,16 +46,22 @@ class Swing:  # 라켓을 휘두름.
     @staticmethod
     def enter(racket, e):
         racket.wait_time = get_time()  # pico2d import 필요
+        if racket.default_rad == 90.0:
+            racket.swing_dir = -1 if game_mode.shuttle.z > racket.z else 1
+        else:
+            racket.swing_dir = -1 if game_mode.shuttle.z < racket.z else 1
+
         pass
 
     @staticmethod
     def exit(racket, e):
         racket.racket_rad = 0
+        # game_mode.shuttle.last_touch = None
         pass
 
     @staticmethod
     def do(racket):
-        racket.racket_rad -= 360.0 * SWING_PER_SECOND * game_framework.frame_time  # 0.75초에 1바퀴 회전이 되도록.
+        racket.racket_rad += racket.swing_dir * 360.0 * SWING_PER_SECOND * game_framework.frame_time  # 0.75초에 1바퀴 회전이 되도록.
         if get_time() - racket.wait_time > SWING_TIME:
             racket.state_machine.handle_event(('TIME_OUT', 0))
         pass
@@ -70,7 +80,7 @@ class StateMachine:
         self.racket = racket
         self.cur_state = Idle
         self.transitions = {
-            Idle: {space_down: Swing},
+            Idle: {space_down: Swing, bt_swing : Swing},
             Swing: {time_out: Idle}
         }
 
