@@ -6,7 +6,7 @@ import game_framework
 import game_mode
 import game_world
 from behavior_tree import BehaviorTree, Sequence, Condition, Action, Selector
-from racket import Racket
+from racket import Racket, Swing
 
 
 # state event check
@@ -348,10 +348,10 @@ class Player:
         distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
         return distance2 < (PIXEL_PER_METER * r) ** 2
 
-    def is_last_touching(self):  # 내가 마지막으로 쳤다면 SUCCESS
+    def is_last_touching(self):  # 내가 마지막으로 쳤다면 FAIL
         if game_mode.shuttle.last_touch == self.racket:
-            return BehaviorTree.SUCCESS
-        return BehaviorTree.FAIL
+            return BehaviorTree.FAIL
+        return BehaviorTree.SUCCESS
 
     def move_slightly_to(self, tx, ty):
         self.dir = math.atan2(ty - self.y, tx - self.x)
@@ -368,8 +368,8 @@ class Player:
             return BehaviorTree.RUNNING
 
     def swing_racket(self):
-        if self.racket.state_machine is not Racket.SWING:
-            self.racket.state_machine.handle_event('bt_swing', 0)
+        if self.racket.state_machine is not Swing:
+            self.racket.state_machine.handle_event(('bt_swing', 0))
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.FAIL
@@ -395,14 +395,14 @@ class Player:
     def build_behavior_tree(self):
 
         a1 = Action('라켓을 휘두른다', self.swing_racket)
-        c1 = Condition('마지막으로 친 상대가 나인가?', self.is_last_touching)
-        a2 = Action('셔틀콕을 향해 이동', self.move_to_shuttle(0.5))
+        c1 = Condition('마지막으로 친 상대가 플레이어인가?', self.is_last_touching)
+        a2 = Action('셔틀콕을 향해 이동', self.move_to_shuttle)
         c2 = Condition('셔틀콕이 내 코트쪽에 있는가?', self.is_on_right_side)
         c3 = Condition('셔틀콕이 향하는 방향이 왼쪽인가?', self.is_shuttle_face_right)
 
-        a3 = Action('코트의 중앙으로 이동', self.move_to_center(0.5))
+        a3 = Action('코트의 중앙으로 이동', self.move_to_center)
 
-        SEQ_ATTACK = Sequence('마지막으로 친 상대가 나인가?', c2, c1, a2, a1)
+        SEQ_ATTACK = Sequence('공격', c2, c1, a2, a1)
         SEQ_MOVE_CENTER = Sequence('코트의 중앙으로 이동', a3)
         root = SEL_ATTACK_or_DEFEND = Selector('공격 또는 수비', SEQ_ATTACK, a3)
         self.bt = BehaviorTree(root)
