@@ -1,7 +1,7 @@
 from pico2d import *
 import game_framework
 
-import game_mode as start_mode
+import play_mode as start_mode
 
 # 게임 시작
 

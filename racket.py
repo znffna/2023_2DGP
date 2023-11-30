@@ -3,7 +3,7 @@ from math import radians, cos, sin
 from pico2d import *
 
 import game_framework
-import game_mode
+import play_mode
 
 
 def space_down(e):
@@ -12,6 +12,7 @@ def space_down(e):
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
+
 
 def bt_swing(e):
     return e[0] == 'bt_swing'
@@ -47,16 +48,16 @@ class Swing:  # 라켓을 휘두름.
     def enter(racket, e):
         racket.wait_time = get_time()  # pico2d import 필요
         if racket.default_rad == 90.0:
-            racket.swing_dir = -1 if game_mode.shuttle.z > racket.z else 1
+            racket.swing_dir = -1 if play_mode.shuttle.z > racket.z else 1
         else:
-            racket.swing_dir = -1 if game_mode.shuttle.z < racket.z else 1
+            racket.swing_dir = -1 if play_mode.shuttle.z < racket.z else 1
 
         pass
 
     @staticmethod
     def exit(racket, e):
         racket.racket_rad = 0
-        # game_mode.shuttle.last_touch = None
+        # play_mode.shuttle.last_touch = None
         pass
 
     @staticmethod
@@ -80,7 +81,7 @@ class StateMachine:
         self.racket = racket
         self.cur_state = Idle
         self.transitions = {
-            Idle: {space_down: Swing, bt_swing : Swing},
+            Idle: {space_down: Swing, bt_swing: Swing},
             Swing: {time_out: Idle}
         }
 
@@ -102,6 +103,9 @@ class StateMachine:
 
     def draw(self):
         self.cur_state.draw(self.racket)
+
+
+
 
 
 class Racket:
@@ -128,6 +132,10 @@ class Racket:
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
         pass
+
+    def get_bb_center_len():
+        return 35
+
 
     def get_bb(self):
         now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + self.default_rad + 45.0))

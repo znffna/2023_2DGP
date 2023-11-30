@@ -24,6 +24,7 @@ def handle_events():
             shuttle.x = 300
             shuttle.y = 30
             shuttle.z = 300
+            shuttle.last_touch = None
         else:
             player.handle_event(event)
             pass
