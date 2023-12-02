@@ -70,8 +70,11 @@ class Shuttle:
         return self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size
 
     def handle_collision(self, group, other):
-        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing and self.last_touch != other:
+        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing:
             if get_time() - self.cooldown > 0.5:
+                other_rad = other.default_rad
+                # if other_rad == 0.0:
+                #     other_rad = 270.0
                 self.velocity[0] = 400.0 * cos(radians(other.racket_rad + 90.0))
                 self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
                 self.degree = other.racket_rad + 90.0
