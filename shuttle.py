@@ -64,7 +64,7 @@ class Shuttle:
         # self.image.draw(1200, 30)
 
     def get_bb(self):  # shuttle size
-        return self.x - self.size, self.y + self.z - self.size, self.x + self.size, self.y + self.z + self.size
+        return self.x - self.size // 2, self.y + self.z - self.size // 2, self.x + self.size // 2, self.y + self.z + self.size // 2
 
     def get_shadow(self):
         return self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size

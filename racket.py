@@ -40,7 +40,7 @@ class Idle:  # 가만히 있음
     def draw(racket):
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.default_rad), ''
                                          , racket.x + 35 * cos(radians(racket.default_rad + 45.0))
-                                         , racket.z + 35 * sin(radians(racket.default_rad + 45.0)), 70, 70);
+                                         , racket.y + 35 * sin(radians(racket.default_rad + 45.0)), 70, 70);
 
 
 class Swing:  # 라켓을 휘두름.
@@ -48,9 +48,9 @@ class Swing:  # 라켓을 휘두름.
     def enter(racket, e):
         racket.wait_time = get_time()  # pico2d import 필요
         if racket.default_rad == 90.0:
-            racket.swing_dir = -1 if play_mode.shuttle.z > racket.z else 1
+            racket.swing_dir = -1 if play_mode.shuttle.y + play_mode.shuttle.z > racket.y else 1
         else:
-            racket.swing_dir = -1 if play_mode.shuttle.z < racket.z else 1
+            racket.swing_dir = -1 if play_mode.shuttle.y + play_mode.shuttle.z < racket.y else 1
 
         pass
 
@@ -71,7 +71,7 @@ class Swing:  # 라켓을 휘두름.
     def draw(racket):
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.racket_rad + racket.default_rad), ''
                                          , racket.x + 35 * cos(radians(racket.racket_rad + racket.default_rad + 45.0))
-                                         , racket.z + 35 * sin(radians(racket.racket_rad + racket.default_rad + 45.0))
+                                         , racket.y + 35 * sin(radians(racket.racket_rad + racket.default_rad + 45.0))
                                          , 70, 70);
         pass
 
@@ -112,7 +112,7 @@ class Racket:
     image = None
 
     def __init__(self, rad=0.0):
-        self.x, self.z = 0, 0
+        self.x, self.y = 0, 0
         self.default_rad = rad
         self.racket_rad = 0.0
         self.racket_swing = False
@@ -139,7 +139,7 @@ class Racket:
 
     def get_bb(self):
         now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + self.default_rad + 45.0))
-        now_y = self.z + 1.5 * 35 * sin(radians(self.racket_rad + self.default_rad + 45.0))
+        now_y = self.y + 1.5 * 35 * sin(radians(self.racket_rad + self.default_rad + 45.0))
 
         return now_x - 20, now_y - 20, now_x + 20, now_y + 20
 
