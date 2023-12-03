@@ -17,7 +17,7 @@ PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 class Shuttle:
     image = None
     shadow_image = None
-
+    hit_sound = None
     def __init__(self):
         self.last_touch = None
         self.x, self.y, self.z = 200, 30, 400
@@ -32,6 +32,9 @@ class Shuttle:
             Shuttle.image = load_image('resource/shuttle.png')  # 200 x 225 size
         if Shuttle.shadow_image == None:
             Shuttle.shadow_image = load_image('resource/shuttle_shadow.png')  # 200 x 225 size
+        if Shuttle.hit_sound == None:
+            Shuttle.hit_sound = load_wav('resource/hit.wav')
+            Shuttle.hit_sound.set_volume(32)
 
     def update(self):
         self.x += self.velocity[0] * game_framework.frame_time
@@ -80,6 +83,7 @@ class Shuttle:
                 self.degree = other.racket_rad + 90.0
                 self.cooldown = get_time()
                 self.last_touch = other
+                Shuttle.hit_sound.play()
         if group == 'shuttle:net':
             self.velocity[0] *= -0.5
             self.accelate[0] *= -1

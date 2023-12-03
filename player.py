@@ -154,14 +154,14 @@ class MoveVertical:  # 상하 이동 중
     def do(player):
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
-        player.z += player.TB_dir * RUN_HEIGHT_SPEED_PPS * game_framework.frame_time
-        player.z = clamp(35, player.z, 145 - 35)
-        player.x = clamp(player.z - 30, player.x, 800 + 30 - player.z)
+        player.y += player.TB_dir * RUN_HEIGHT_SPEED_PPS * game_framework.frame_time
+        player.y = clamp(35, player.y, 145 - 35)
+        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
         pass
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 78, player.x, player.z);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 78, player.x, player.y);
         pass
 
 
@@ -188,10 +188,10 @@ class MoveDiagonal:  # 대각선 이동 중
         # 이동하는 코드 작성
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
-        player.x = clamp(player.z - 30, player.x, 800 + 30 - player.z)
+        player.x = clamp(player.y - 30, player.x, 800 + 30 - player.y)
         # player.x = clamp(35, player.x, 800 - 35)
         player.y += player.TB_dir * RUN_HEIGHT_SPEED_PPS * game_framework.frame_time
-        player.y = clamp(35, player.z, 145 - 35)
+        player.y = clamp(35, player.y, 145 - 35)
 
         # if player.height > 0:
         #     player.height += player.velocity * game_framework.frame_time
@@ -205,7 +205,7 @@ class MoveDiagonal:  # 대각선 이동 중
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.z);
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
         pass
 
 

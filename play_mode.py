@@ -6,7 +6,7 @@ import game_world
 from player import Player
 from racket import Racket
 from shuttle import Shuttle
-from stadium import Stadium
+from background import BackGround
 
 
 def handle_events():
@@ -38,7 +38,7 @@ def init():
     global shuttle
     running = True
 
-    stadium = Stadium()
+    stadium = BackGround()
     game_world.add_object(stadium)
     game_world.add_collision_pair('player:net', None, stadium)
     game_world.add_collision_pair('shuttle:net', None, stadium)
