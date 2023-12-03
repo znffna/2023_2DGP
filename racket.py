@@ -51,7 +51,7 @@ class Swing:  # 라켓을 휘두름.
             racket.swing_dir = -1 if play_mode.shuttle.y + play_mode.shuttle.z > racket.y else 1
         else:
             racket.swing_dir = -1 if play_mode.shuttle.y + play_mode.shuttle.z < racket.y else 1
-
+        Racket.swing_sound.play()
         pass
 
     @staticmethod
@@ -110,7 +110,7 @@ class StateMachine:
 
 class Racket:
     image = None
-
+    swing_sound = None
     def __init__(self, rad=0.0):
         self.x, self.y = 0, 0
         self.default_rad = rad
@@ -120,6 +120,9 @@ class Racket:
 
         if Racket.image == None:
             Racket.image = load_image('resource/badmintonRacket.png')
+            Racket.swing_sound = load_wav('resource/hit.wav')
+            Racket.swing_sound.set_volume(32)
+
 
     def update(self):
         self.state_machine.update()

@@ -78,9 +78,14 @@ class Shuttle:
                 other_rad = other.default_rad
                 # if other_rad == 0.0:
                 #     other_rad = 270.0
-                self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
-                self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
-                self.degree = other.racket_rad + 90.0
+                if other.swing_dir == -1:
+                    self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
+                    self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
+                    self.degree = other.racket_rad + 90.0
+                else:
+                    self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 270.0))
+                    self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 270.0))
+                    self.degree = other.racket_rad + 270.0
                 self.cooldown = get_time()
                 self.last_touch = other
                 Shuttle.hit_sound.play()
