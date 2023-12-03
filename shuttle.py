@@ -37,7 +37,7 @@ class Shuttle:
         self.x += self.velocity[0] * game_framework.frame_time
         self.z += self.velocity[1] * game_framework.frame_time
 
-        self.velocity[0] += self.accelate[0] * PIXEL_PER_METER * game_framework.frame_time
+        self.velocity[0] += self.accelate[0] * (self.velocity[0] / 100) * PIXEL_PER_METER * game_framework.frame_time
         self.velocity[1] += self.accelate[1] * PIXEL_PER_METER * game_framework.frame_time
         if self.velocity[0] != 0:
             self.degree = get_degree(self.velocity[1] / self.velocity[0]) + 90.0
@@ -75,7 +75,7 @@ class Shuttle:
                 other_rad = other.default_rad
                 # if other_rad == 0.0:
                 #     other_rad = 270.0
-                self.velocity[0] = 400.0 * cos(radians(other.racket_rad + 90.0))
+                self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
                 self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
                 self.degree = other.racket_rad + 90.0
                 self.cooldown = get_time()

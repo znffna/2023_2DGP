@@ -214,7 +214,7 @@ class Jump:
     def enter(player, e):
         player.jump_time = get_time()  # pico2d import 필요
         player.current_time = player.jump_time
-        player.move_dir = 5 if player.dir == '오른쪽' else 6
+        player.move_dir = 5 if player.face_dir == '오른쪽' else 6
         pass
 
     @staticmethod
@@ -417,7 +417,7 @@ class Player:
             return BehaviorTree.RUNNING
 
     def is_shuttle_speed_high(self):
-        if play_mode.shuttle.velocity[1] > 0.0:
+        if play_mode.shuttle.velocity[1] > RUN_SPEED_PPS:
             return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL
 
@@ -471,7 +471,7 @@ class Player:
 
         # 공격 이동: 셔틀콕의 속도에 따라 이동방향 결정
         SEQ_MOVE_TO_SHUTTLE = Sequence('셔틀콕 방향 이동', c8, a2)
-        SEL_MOVE_TO_OR_FROM = Selector('셔틀콕을 치기위해 이동', SEQ_MOVE_TO_SHUTTLE, a5)
+        SEL_MOVE_TO_OR_FROM = Selector('셔틀콕을 치기위해 이동', SEQ_MOVE_TO_SHUTTLE, a2)
 
         # 공격 액션 - 이동하고 범위안에 셔틀콕 존재시 스윙도 수행
         SEQ_SWING_AND_MOVE = Sequence('스윙 및 이동', SEQ_CHECK_SWING, SEL_MOVE_TO_OR_FROM)
