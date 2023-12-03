@@ -21,7 +21,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_s:
-            shuttle.x = 300
+            shuttle.x = 200
             shuttle.y = 30
             shuttle.z = 300
             shuttle.last_touch = None

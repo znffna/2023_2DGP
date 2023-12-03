@@ -20,7 +20,7 @@ class Shuttle:
 
     def __init__(self):
         self.last_touch = None
-        self.x, self.y, self.z = 300, 30, 400
+        self.x, self.y, self.z = 200, 30, 400
         self.velocity = [0.0, 0.0]
         self.accelate = [0.0, -9.8]
 

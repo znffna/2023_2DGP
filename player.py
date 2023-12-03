@@ -438,6 +438,20 @@ class Player:
             return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL
 
+    def move_to_shuttle_dest(self, r = 0.5): # 셔틀콕의 현재 기울기의 도착점으로 이동하는거
+        if play_mode.shuttle.velocity[1] < 0.0 and abs(play_mode.shuttle.velocity[0]) > RUN_SPEED_PPS:
+            dir = math.atan2(play_mode.shuttle.velocity[0], play_mode.shuttle.velocity[1])
+            c = play_mode.shuttle.y + play_mode.shuttle.z + dir * play_mode.shuttle.x
+            x = -c / dir
+            self.move_slightly_from(x, play_mode.shuttle.y)
+        else:
+            self.move_slightly_from(play_mode.shuttle.x, play_mode.shuttle.y)
+
+        if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.SUCCESS
+
     def build_behavior_tree(self):
 
         a1 = Action('라켓을 휘두른다', self.swing_racket)
@@ -451,14 +465,13 @@ class Player:
         c7 = Condition('셔틀콕이 캐릭터의 라켓범위 안에 있는가?', self.is_racket_distance)
         a4 = Action('셔틀콕 반대로 이동', self.move_from_shuttle)
         c8 = Condition('셔틀콕이 향하는 속도가 선수보다 빠른가?', self.is_shuttle_speed_high)
-
+        a5 = Action('셔틀콕의 도착지점으로 이동', self.move_to_shuttle_dest)
         # 스윙 판단 : 현재 라켓의 사거리 안에 있을시 라켓스윙 수행.
         SEQ_CHECK_SWING = Sequence('라켓을 휘둘러야 하는가?', c7, a1)
 
         # 공격 이동: 셔틀콕의 속도에 따라 이동방향 결정
         SEQ_MOVE_TO_SHUTTLE = Sequence('셔틀콕 방향 이동', c8, a2)
-        SEQ_MOVE_FROM_SHUTTLE = Sequence('셔틀콕 역방향 이동', a4)
-        SEL_MOVE_TO_OR_FROM = Selector('셔틀콕을 치기위해 이동', SEQ_MOVE_TO_SHUTTLE , SEQ_MOVE_FROM_SHUTTLE)
+        SEL_MOVE_TO_OR_FROM = Selector('셔틀콕을 치기위해 이동', SEQ_MOVE_TO_SHUTTLE, a5)
 
         # 공격 액션 - 이동하고 범위안에 셔틀콕 존재시 스윙도 수행
         SEQ_SWING_AND_MOVE = Sequence('스윙 및 이동', SEQ_CHECK_SWING, SEL_MOVE_TO_OR_FROM)
