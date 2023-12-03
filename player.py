@@ -190,8 +190,8 @@ class MoveDiagonal:  # 대각선 이동 중
         player.x += player.LR_dir * RUN_SPEED_PPS * game_framework.frame_time
         player.x = clamp(player.z - 30, player.x, 800 + 30 - player.z)
         # player.x = clamp(35, player.x, 800 - 35)
-        player.z += player.TB_dir * RUN_HEIGHT_SPEED_PPS * game_framework.frame_time
-        player.z = clamp(35, player.z, 145 - 35)
+        player.y += player.TB_dir * RUN_HEIGHT_SPEED_PPS * game_framework.frame_time
+        player.y = clamp(35, player.z, 145 - 35)
 
         # if player.height > 0:
         #     player.height += player.velocity * game_framework.frame_time
@@ -214,17 +214,19 @@ class Jump:
     def enter(player, e):
         player.jump_time = get_time()  # pico2d import 필요
         player.current_time = player.jump_time
+        player.move_dir = 5 if player.dir == '오른쪽' else 6
         pass
 
     @staticmethod
     def exit(player, e):
         player.height = 0.0
+        player.move_dir -= 4
         pass
 
     @staticmethod
     def do(player):
         current_time = get_time() - player.jump_time
-
+        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
         if current_time > TIME_PER_JUMP:
             player.state_machine.handle_event(('TIME_OUT', 0))
         elif player.current_time < TIME_PER_JUMP / 2.0:
@@ -296,6 +298,8 @@ class Player:
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         self.build_behavior_tree()
         self.bt = None
+        self.point = 0  # 플레이어 점수
+
         if dir == '오른쪽':
             self.racket = Racket(90.0)
             game_world.add_object(self.racket, 1)
@@ -339,6 +343,9 @@ class Player:
     def get_bb(self):
         return self.x - 35, self.y - 40, self.x + 35, self.y + 40
 
+    def point_position(self):
+        return (200, 500) if dir == '오른쪽' else (600, 500)
+
     def handle_collision(self, group, other):
         if group == 'player:net':
             if self.x < other.x:
@@ -357,16 +364,34 @@ class Player:
         return BehaviorTree.SUCCESS
 
     def move_slightly_to(self, tx, ty):
-        self.dir = math.atan2(ty - self.y, tx - self.x)
+        self.dir = math.atan2(ty - self.y, tx + 30 - self.x)
         dir = math.cos(self.dir)
         dir /= math.fabs(dir)
         self.x += dir * self.speed * RUN_SPEED_PPS * game_framework.frame_time  # * math.cos(self.dir)
         self.y += self.speed * RUN_HEIGHT_SPEED_PPS * math.sin(self.dir) * game_framework.frame_time
-
     pass
 
+    def move_slightly_from(self, tx, ty):
+        self.dir = math.atan2(ty - self.y, self.x - tx)
+        dir = math.cos(self.dir)
+        dir /= math.fabs(dir)
+        self.x += dir * self.speed * RUN_SPEED_PPS * game_framework.frame_time  # * math.cos(self.dir)
+        self.y += self.speed * RUN_HEIGHT_SPEED_PPS * math.sin(self.dir) * game_framework.frame_time
+        self.x = clamp(self.y - 30, self.x, 800 + 30 - self.y)
+        self.y = clamp(35, self.y, 145 - 35)
+
     def move_to_shuttle(self, r=50.0):
+        print("move_to_shuttle")
         self.move_slightly_to(play_mode.shuttle.x, play_mode.shuttle.y + 35)
+        if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+    def move_from_shuttle(self, r=50.0):
+        print("move_from_shuttle")
+        self.move_slightly_from(play_mode.shuttle.x + play_mode.shuttle.velocity[0],
+                                play_mode.shuttle.y + play_mode.shuttle.velocity[1])
         if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
             return BehaviorTree.SUCCESS
         else:
@@ -388,10 +413,16 @@ class Player:
         if self.distance_less_than(600, 50, self.x, self.y, r):
             return BehaviorTree.SUCCESS
         else:
+            self.move_slightly_to(600, 50)
             return BehaviorTree.RUNNING
 
+    def is_shuttle_speed_high(self):
+        if play_mode.shuttle.velocity[1] > 0.0:
+            return BehaviorTree.SUCCESS
+        return BehaviorTree.FAIL
+
     def is_shuttle_face_right(self):
-        if play_mode.shuttle.velocity[0] > 0:
+        if play_mode.shuttle.velocity[0] > 0.0:
             return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL
 
@@ -402,8 +433,8 @@ class Player:
 
     def is_racket_distance(self):
         # TODO 거리계산
-        if (play_mode.shuttle.x - self.x) ** 2 + (
-                play_mode.shuttle.y + play_mode.shuttle.z - self.y - self.height) ** 2 < 100 ** 2:
+        if (play_mode.shuttle.x - self.x) ** 2 + (play_mode.shuttle.y - self.y) ** 2 + (
+                play_mode.shuttle.z - self.height) ** 2 < 150 ** 2:
             return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL
 
@@ -418,23 +449,30 @@ class Player:
         # c6 = Condition('셔틀콕의 높이가 라켓의 높이보다 낮은가?', self.is_low_than_racket)
         a3 = Action('코트의 중앙으로 이동', self.move_to_center)
         c7 = Condition('셔틀콕이 캐릭터의 라켓범위 안에 있는가?', self.is_racket_distance)
+        a4 = Action('셔틀콕 반대로 이동', self.move_from_shuttle)
+        c8 = Condition('셔틀콕이 향하는 속도가 선수보다 빠른가?', self.is_shuttle_speed_high)
 
-
-        # TODO 이동할때 볼의 속도가 캐릭터 이동속도보다 빠른경우 반대편으로 가게 만드는 코드 작성하자. 12.02
+        # 스윙 판단 : 현재 라켓의 사거리 안에 있을시 라켓스윙 수행.
         SEQ_CHECK_SWING = Sequence('라켓을 휘둘러야 하는가?', c7, a1)
-        SEQ_MOVE_TO_SHUTTLE = Sequence('이동을 셔틀콕을 향해', c7, a1, a2)
-        # SEL -> 스윙? -> (이동, 스윙) : (이동) 으로
 
+        # 공격 이동: 셔틀콕의 속도에 따라 이동방향 결정
+        SEQ_MOVE_TO_SHUTTLE = Sequence('셔틀콕 방향 이동', c8, a2)
+        SEQ_MOVE_FROM_SHUTTLE = Sequence('셔틀콕 역방향 이동', a4)
+        SEL_MOVE_TO_OR_FROM = Selector('셔틀콕을 치기위해 이동', SEQ_MOVE_TO_SHUTTLE , SEQ_MOVE_FROM_SHUTTLE)
 
-        # 공격
-        # 셔틀콕이 캐릭터 주위 라켓길이 * 2 안에 있는지 체크. 있을경우 swing, 아니면 move
-        SEL_ATTACK = Selector('공격태세', SEQ_MOVE_TO_SHUTTLE, a2)
-        # 공격 판단
-        SEQ_CHECK_MYTURN = Sequence('내가 공격할 차례인가?', c1, c2)
-        SEQ_ATTACK_CHECK = Sequence('공격판단중', c2, SEL_ATTACK)
+        # 공격 액션 - 이동하고 범위안에 셔틀콕 존재시 스윙도 수행
+        SEQ_SWING_AND_MOVE = Sequence('스윙 및 이동', SEQ_CHECK_SWING, SEL_MOVE_TO_OR_FROM)
+        SEQ_JUST_MOVE = Sequence('오직 이동', SEL_MOVE_TO_OR_FROM)
+        SEL_ATTACK_ACTION = Selector('공격태세', SEQ_SWING_AND_MOVE, SEQ_JUST_MOVE)
+
+        # 공격 판단 - 공이 우측으로 향하거나 코트위에 있으면 SUCCESS 리턴
+        SEL_ATTACK_CHECK = Selector('현재 공격을 해야하는가?', c3, c2)
+
+        # 공격 - 공격할 차례가 아니면 CHECK에서 FAIL 리턴
+        SEQ_ATTACK = Sequence('공격', SEL_ATTACK_CHECK, SEL_ATTACK_ACTION)
 
         # 수비
-        SEQ_DEPEND = Sequence('수비태세', a3)
+        SEQ_DEPEND = Sequence('수비', a3)
 
-        root = SEL_ATTACK_or_DEFEND = Selector('공격 또는 수비', SEQ_ATTACK_CHECK, SEQ_DEPEND)
+        root = SEL_ATTACK_or_DEFEND = Selector('공격 또는 수비', SEQ_ATTACK, SEQ_DEPEND)
         self.bt = BehaviorTree(root)
