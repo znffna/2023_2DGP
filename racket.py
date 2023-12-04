@@ -137,7 +137,6 @@ class Racket:
 
     def draw(self):
         self.state_machine.draw()
-        draw_rectangle(*self.get_bb())
         pass
 
     def get_bb_center_len():

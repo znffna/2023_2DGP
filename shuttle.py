@@ -83,7 +83,6 @@ class Shuttle:
                                                  , self.x, self.y - 5, self.size, self.size)
         Shuttle.image.clip_composite_draw(0, 0, 200, 225, radians(self.degree), ''
                                           , self.x, self.y + self.z, self.size, self.size)
-        draw_rectangle(*self.get_bb())
 
         # self.image.draw(1200, 30)
 

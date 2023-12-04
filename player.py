@@ -104,8 +104,14 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
-        pass
+        if player.bt is None:
+            player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        else:
+            if player.bt_state == 'Idle':
+                player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+            else:  # TODO 걷는 이미지가 나오도록 수정할 것.
+                player.image.clip_draw(int(player.frame - 6) * 70, (player.move_dir + 4) * 80, 50, 80, player.x, player.y);
+                pass
 
 
 class MoveHorizon:  # 좌우 이동 중
@@ -298,6 +304,7 @@ class Player:
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         self.build_behavior_tree()
         self.bt = None
+        self.bt_state = 'Idle'
         self.point = 0  # 플레이어 점수
         if dir == '오른쪽':
             self.x, self.y = 300, 60
@@ -317,6 +324,7 @@ class Player:
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 2  # 바라보는 방향 (이미지 위치)
             self.build_behavior_tree()
+            self.bt_state = 'Idle'
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
@@ -336,6 +344,8 @@ class Player:
         self.racket.state_machine.handle_event(('INPUT', e))
 
     def draw(self):
+        Player.shadow_image.clip_composite_draw(0, 0, 200, 200, 0, ''
+                                                 , self.x, self.y - 35, 40, 40)
         self.state_machine.draw()
         pass
 
@@ -360,6 +370,7 @@ class Player:
         return BehaviorTree.SUCCESS
 
     def move_slightly_to(self, tx, ty):
+        self.bt_state = 'Move'
         self.dir = math.atan2(ty - self.y, tx + 30 - self.x)
         dir = math.cos(self.dir)
         dir /= math.fabs(dir)
@@ -378,15 +389,15 @@ class Player:
         self.y = clamp(35, self.y, 145 - 35)
 
     def move_to_shuttle(self, r=50.0):
-        print("move_to_shuttle")
         self.move_slightly_to(play_mode.shuttle.x, play_mode.shuttle.y + 35)
+        self.bt_state = 'Move'
         if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
+            self.bt_state = 'Idle'
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
 
     def move_from_shuttle(self, r=50.0):
-        print("move_from_shuttle")
         self.move_slightly_from(play_mode.shuttle.x + play_mode.shuttle.velocity[0],
                                 play_mode.shuttle.y + play_mode.shuttle.velocity[1])
         if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
@@ -408,8 +419,10 @@ class Player:
 
     def move_to_center(self, r=0.3):
         if self.distance_less_than(600, 50, self.x, self.y, r):
+            self.bt_state = 'Idle'
             return BehaviorTree.SUCCESS
         else:
+            self.bt_state = 'Move'
             self.move_slightly_to(600, 50)
             return BehaviorTree.RUNNING
 
