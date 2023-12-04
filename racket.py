@@ -40,7 +40,8 @@ class Idle:  # 가만히 있음
     def draw(racket):
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.default_rad), ''
                                          , racket.x + 35 * cos(radians(racket.default_rad + 45.0))
-                                         , racket.y + 35 * sin(radians(racket.default_rad + 45.0)), 70, 70);
+                                         , racket.y + racket.height + 35 * sin(radians(racket.default_rad + 45.0)),
+                                         70, 70);
 
 
 class Swing:  # 라켓을 휘두름.
@@ -71,7 +72,8 @@ class Swing:  # 라켓을 휘두름.
     def draw(racket):
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.racket_rad + racket.default_rad), ''
                                          , racket.x + 35 * cos(radians(racket.racket_rad + racket.default_rad + 45.0))
-                                         , racket.y + 35 * sin(radians(racket.racket_rad + racket.default_rad + 45.0))
+                                         , racket.y + racket.height + 35 * sin(
+                radians(racket.racket_rad + racket.default_rad + 45.0) )
                                          , 70, 70);
         pass
 
@@ -105,14 +107,13 @@ class StateMachine:
         self.cur_state.draw(self.racket)
 
 
-
-
-
 class Racket:
     image = None
     swing_sound = None
+
     def __init__(self, rad=0.0):
         self.x, self.y = 0, 0
+        self.height = 0.0
         self.default_rad = rad
         self.racket_rad = 0.0
         self.racket_swing = False
@@ -122,7 +123,6 @@ class Racket:
             Racket.image = load_image('resource/badmintonRacket.png')
             Racket.swing_sound = load_wav('resource/hit.wav')
             Racket.swing_sound.set_volume(32)
-
 
     def update(self):
         self.state_machine.update()
@@ -139,10 +139,9 @@ class Racket:
     def get_bb_center_len():
         return 35
 
-
     def get_bb(self):
         now_x = self.x + 1.5 * 35 * cos(radians(self.racket_rad + self.default_rad + 45.0))
-        now_y = self.y + 1.5 * 35 * sin(radians(self.racket_rad + self.default_rad + 45.0))
+        now_y = self.y + self.height + 1.5 * 35 * sin(radians(self.racket_rad + self.default_rad + 45.0))
 
         return now_x - 20, now_y - 20, now_x + 20, now_y + 20
 

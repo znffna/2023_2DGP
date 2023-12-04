@@ -289,8 +289,8 @@ class Player:
     shadow_image = None
 
     def __init__(self, dir):
-        self.x, self.y = 0, 0
-        self.height = 0
+        self.x, self.y = 0.0, 0.0
+        self.height = 0.0
         self.frame = 6
         self.speed = 1.0  # 스탯
         self.state_machine = StateMachine(self)
@@ -299,9 +299,9 @@ class Player:
         self.build_behavior_tree()
         self.bt = None
         self.point = 0  # 플레이어 점수
-        self.font = load_font('resource/SevenSegment.ttf', 20)
+        self.font = load_font('resource/SevenSegment.ttf', 40)
         if dir == '오른쪽':
-            self.font_position = (200, 550)
+            self.font_position = (350, 550)
             self.racket = Racket(90.0)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
@@ -311,7 +311,7 @@ class Player:
             self.move_dir = 1  # 바라보는 방향 (이미지 위치)
 
         elif dir == '왼쪽':
-            self.font_position = (600, 550)
+            self.font_position = (430, 550)
             self.racket = Racket(0.0)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
@@ -330,6 +330,7 @@ class Player:
         self.state_machine.update()
         self.racket.x = self.x
         self.racket.y = self.y
+        self.racket.height = self.height
         if self.bt:
             self.bt.run()
 
@@ -339,7 +340,7 @@ class Player:
 
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(*self.font_position, f'{self.point}')
+        self.font.draw(*self.font_position, f'{self.point}', (255, 0, 0))
         draw_rectangle(*self.get_bb())
         pass
 

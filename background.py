@@ -15,7 +15,6 @@ class BackGround:
 
     def draw(self):
         self.image.draw(400, 300)
-        draw_rectangle(*self.get_bb())
         # self.image.draw(1200, 30)
 
     def get_bb(self):  # Net
