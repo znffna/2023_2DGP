@@ -1,4 +1,4 @@
-from pico2d import get_events, clear_canvas, update_canvas
+from pico2d import get_events, clear_canvas, update_canvas, load_font
 from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE, SDLK_s
 
 import game_framework
@@ -37,6 +37,7 @@ def init():
     global rackets
     global shuttle
     global ai_player
+    global font
     running = True
 
     stadium = BackGround()
@@ -57,7 +58,7 @@ def init():
     game_world.add_object(ai_player, 1)
     game_world.add_collision_pair('player:net', ai_player, None)
 
-
+    font = load_font('resource/SevenSegment.ttf', 40)
 
     pass
 
@@ -76,6 +77,7 @@ def update():
 def draw():
     clear_canvas()
     game_world.render()
+    font.draw(350, 550, f'{player.point}  -  {ai_player.point}', (255, 0, 0))
     update_canvas()
 
 

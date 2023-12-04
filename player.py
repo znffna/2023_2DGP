@@ -60,7 +60,7 @@ def time_out(e):
 # 배드민턴 길이 = 13.4m, 출력할 캔버스 크기 : 800 * 600
 # PIXEL_PER_METER = (8000 / 1340)  # 800 pixel 1340 cm
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
-RUN_SPEED_KMPH = 20.0  # Km / Hour
+RUN_SPEED_KMPH = 30.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -299,9 +299,7 @@ class Player:
         self.build_behavior_tree()
         self.bt = None
         self.point = 0  # 플레이어 점수
-        self.font = load_font('resource/SevenSegment.ttf', 40)
         if dir == '오른쪽':
-            self.font_position = (350, 550)
             self.racket = Racket(90.0)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
@@ -311,7 +309,6 @@ class Player:
             self.move_dir = 1  # 바라보는 방향 (이미지 위치)
 
         elif dir == '왼쪽':
-            self.font_position = (430, 550)
             self.racket = Racket(0.0)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
@@ -340,15 +337,10 @@ class Player:
 
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(*self.font_position, f'{self.point}', (255, 0, 0))
-        draw_rectangle(*self.get_bb())
         pass
 
     def get_bb(self):
         return self.x - 35, self.y - 40, self.x + 35, self.y + 40
-
-    def point_position(self):
-        return (200, 500) if dir == '오른쪽' else (600, 500)
 
     def handle_collision(self, group, other):
         if group == 'player:net':

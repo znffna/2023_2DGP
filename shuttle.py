@@ -19,6 +19,7 @@ class Shuttle:
     image = None
     shadow_image = None
     hit_sound = None
+    get_points_sound = None
     def __init__(self):
         self.last_touch = None
         self.x, self.y, self.z = 200, 30, 400
@@ -38,6 +39,9 @@ class Shuttle:
         if Shuttle.hit_sound == None:
             Shuttle.hit_sound = load_wav('resource/hit.wav')
             Shuttle.hit_sound.set_volume(32)
+            Shuttle.get_points_sound = load_wav('resource/get_point.wav')
+            Shuttle.get_points_sound.set_volume(32)
+
 
     def update(self):
         # 판이 끝났을때 판을 초기화 하고 다시 시작되는 코드
@@ -63,14 +67,7 @@ class Shuttle:
         self.x = clamp(0, self.x, 800)
         self.z = clamp(0, self.z, 600)
         if self.z == 0 and self.move_in_air:
-            self.move_in_air = False
-            self.restart_timer = get_time()
-            if self.x > 400:
-                play_mode.player.point += 1
-                self.start_spot = 'Player'
-            else:
-                play_mode.ai_player.point += 1
-                self.start_spot = 'AI'
+            self.round_end()
 
         if self.x == 0 or self.x == 800:
             self.velocity[0] *= -0.5
@@ -96,8 +93,20 @@ class Shuttle:
     def get_shadow(self):
         return self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size
 
+    def round_end(self):
+        self.move_in_air = False
+        self.restart_timer = get_time()
+        Shuttle.get_points_sound.play()
+        if self.x > 400:
+            play_mode.player.point += 1
+            self.start_spot = 'Player'
+        else:
+            play_mode.ai_player.point += 1
+            self.start_spot = 'AI'
+
+
     def handle_collision(self, group, other):
-        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing:
+        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing and self.last_touch != other:
             if get_time() - self.cooldown > 0.5:
                 other_rad = other.default_rad
                 # if other_rad == 0.0:

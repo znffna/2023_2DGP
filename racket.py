@@ -121,7 +121,7 @@ class Racket:
 
         if Racket.image == None:
             Racket.image = load_image('resource/badmintonRacket.png')
-            Racket.swing_sound = load_wav('resource/hit.wav')
+            Racket.swing_sound = load_wav('resource/swing.wav')
             Racket.swing_sound.set_volume(32)
 
     def update(self):
