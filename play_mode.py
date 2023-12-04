@@ -3,6 +3,8 @@ from sdl2 import SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE, SDLK_s
 
 import game_framework
 import game_world
+import introduce_mode
+import title_mode
 from player import Player
 from racket import Racket
 from shuttle import Shuttle
@@ -19,12 +21,12 @@ def handle_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.quit()
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_s:
-            shuttle.x = 200
-            shuttle.y = 30
-            shuttle.z = 300
-            shuttle.last_touch = None
+            game_framework.change_mode(title_mode)
+        # elif event.type == SDL_KEYDOWN and event.key == SDLK_s:
+        #     shuttle.x = 200
+        #     shuttle.y = 30
+        #     shuttle.z = 300
+        #     shuttle.last_touch = None
         else:
             player.handle_event(event)
             pass
@@ -60,6 +62,7 @@ def init():
 
     font = load_font('resource/SevenSegment.ttf', 40)
 
+    game_framework.push_mode(introduce_mode)
     pass
 
 
@@ -77,7 +80,7 @@ def update():
 def draw():
     clear_canvas()
     game_world.render()
-    font.draw(350, 550, f'{player.point}  -  {ai_player.point}', (255, 0, 0))
+    font.draw(345, 550, f'{player.point:2d} - {ai_player.point:2d}', (255, 0, 0))
     update_canvas()
 
 

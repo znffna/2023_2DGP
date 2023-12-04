@@ -48,8 +48,8 @@ def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
 
-def a_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_a
+def z_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_z
 
 
 def time_out(e):
@@ -58,14 +58,14 @@ def time_out(e):
 
 # Player Run Speed
 # 배드민턴 길이 = 13.4m, 출력할 캔버스 크기 : 800 * 600
-# PIXEL_PER_METER = (8000 / 1340)  # 800 pixel 1340 cm
-PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
-RUN_SPEED_KMPH = 30.0  # Km / Hour
+# PIXEL_PER_METER = (8000 / 1340)
+PIXEL_PER_METER = (800 / 13.4)  # 800 pixel 1340 cm
+RUN_SPEED_KMPH = 20.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
-PIXEL_PER_HEIGHT_METER = (3.0 / 0.3)  # 3 pixel 30 cm
+PIXEL_PER_HEIGHT_METER = (75 / 6.1)  # 75 pixel 6.1m(6100 cm)
 RUN_HEIGHT_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_HEIGHT_METER)
 
 # Player Action Speed
@@ -74,9 +74,9 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
 
 # Player Jump Speed
-JUMP_SPEED_MPS = 10.0
+JUMP_SPEED_MPS = 3.1
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
-TIME_PER_JUMP = 0.7
+TIME_PER_JUMP = 1.0
 JUMP_PER_TIME = 1.0 / TIME_PER_JUMP
 
 
@@ -113,9 +113,9 @@ class MoveHorizon:  # 좌우 이동 중
     def enter(player, e):
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
-            player.LR_dir, player.face_dir = 1, '오른쪽'
+            player.LR_dir = 1
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
-            player.LR_dir, player.face_dir = -1, '왼쪽'
+            player.LR_dir = -1
 
     @staticmethod
     def exit(player, e):
@@ -142,9 +142,9 @@ class MoveVertical:  # 상하 이동 중
     def enter(player, e):
         player.frame = 0
         if up_down(e) or down_up(e):  # 위쪽으로 RUN
-            player.TB_dir, player.face_dir = 1, '위쪽'
+            player.TB_dir = 1
         elif down_down(e) or up_up(e):  # 아래로 RUN
-            player.TB_dir, player.face_dir = -1, '아래쪽'
+            player.TB_dir = -1
 
     @staticmethod
     def exit(player, e):
@@ -170,13 +170,13 @@ class MoveDiagonal:  # 대각선 이동 중
     def enter(player, e):
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
-            player.LR_dir, player.face_dir = 1, '오른쪽'
+            player.LR_dir = 1
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
-            player.LR_dir, player.face_dir = -1, '왼쪽'
+            player.LR_dir = -1
         elif up_down(e) or down_up(e):  # 위쪽으로 RUN
-            player.TB_dir, player.face_dir = 1, '위쪽'
+            player.TB_dir = 1
         elif down_down(e) or up_up(e):  # 아래로 RUN
-            player.TB_dir, player.face_dir = -1, '아래쪽'
+            player.TB_dir = -1
         pass
 
     @staticmethod
@@ -251,16 +251,16 @@ class StateMachine:
         self.transitions = {
             Idle: {right_down: MoveHorizon, left_down: MoveHorizon, right_up: MoveHorizon, left_up: MoveHorizon,
                    up_down: MoveVertical, down_up: MoveVertical, down_down: MoveVertical, up_up: MoveVertical
-                , a_down: Jump},
+                , z_down: Jump},
             MoveHorizon: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle
                 , up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal,
-                          a_down: Jump},
+                          z_down: Jump},
             MoveVertical: {right_down: MoveDiagonal, left_down: MoveDiagonal, right_up: MoveDiagonal,
                            left_up: MoveDiagonal
-                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, a_down: Jump},
+                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, z_down: Jump},
             MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical,
                            left_up: MoveVertical
-                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon, a_down: Jump},
+                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon, z_down: Jump},
             Jump: {time_out: Idle}
         }
 
@@ -300,20 +300,20 @@ class Player:
         self.bt = None
         self.point = 0  # 플레이어 점수
         if dir == '오른쪽':
-            self.racket = Racket(90.0)
+            self.x, self.y = 300, 60
+            self.racket = Racket(90.0, self.x, self.y)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
 
-            self.x, self.y = 300, 60
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 1  # 바라보는 방향 (이미지 위치)
 
         elif dir == '왼쪽':
-            self.racket = Racket(0.0)
+            self.x, self.y = 800 - 300, 60
+            self.racket = Racket(0.0, self.x, self.y)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
 
-            self.x, self.y = 800 - 300, 60
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 2  # 바라보는 방향 (이미지 위치)
             self.build_behavior_tree()
@@ -365,6 +365,7 @@ class Player:
         dir /= math.fabs(dir)
         self.x += dir * self.speed * RUN_SPEED_PPS * game_framework.frame_time  # * math.cos(self.dir)
         self.y += self.speed * RUN_HEIGHT_SPEED_PPS * math.sin(self.dir) * game_framework.frame_time
+
     pass
 
     def move_slightly_from(self, tx, ty):
@@ -373,7 +374,7 @@ class Player:
         dir /= math.fabs(dir)
         self.x += dir * self.speed * RUN_SPEED_PPS * game_framework.frame_time  # * math.cos(self.dir)
         self.y += self.speed * RUN_HEIGHT_SPEED_PPS * math.sin(self.dir) * game_framework.frame_time
-        self.x = clamp(self.y - 30, self.x, 800 + 30 - self.y)
+        self.x = clamp(self.y - 30, self.x, 800 - self.y)
         self.y = clamp(35, self.y, 145 - 35)
 
     def move_to_shuttle(self, r=50.0):
@@ -434,7 +435,7 @@ class Player:
             return BehaviorTree.SUCCESS
         return BehaviorTree.FAIL
 
-    def move_to_shuttle_dest(self, r = 0.5): # 셔틀콕의 현재 기울기의 도착점으로 이동하는거
+    def move_to_shuttle_dest(self, r=0.5):  # 셔틀콕의 현재 기울기의 도착점으로 이동하는거
         if play_mode.shuttle.velocity[1] < 0.0 and abs(play_mode.shuttle.velocity[0]) > RUN_SPEED_PPS:
             dir = math.atan2(play_mode.shuttle.velocity[0], play_mode.shuttle.velocity[1])
             c = play_mode.shuttle.y + play_mode.shuttle.z + dir * play_mode.shuttle.x

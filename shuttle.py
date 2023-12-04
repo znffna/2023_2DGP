@@ -1,4 +1,4 @@
-from math import radians, atan, degrees, cos, sin
+from math import radians, atan, degrees, cos, sin, atan2
 
 from pico2d import *
 
@@ -7,8 +7,8 @@ import play_mode
 from racket import Swing
 
 
-def get_degree(m):
-    radian = atan(m)
+def get_degree(dy, dx):
+    radian = atan2(dy, dx)
     return degrees(radian)
 
 
@@ -62,14 +62,14 @@ class Shuttle:
         self.velocity[0] += self.accelate[0] * (self.velocity[0] / 100) * PIXEL_PER_METER * game_framework.frame_time
         self.velocity[1] += self.accelate[1] * PIXEL_PER_METER * game_framework.frame_time
         if self.velocity[0] != 0:
-            self.degree = get_degree(self.velocity[1] / self.velocity[0]) + 90.0
+            self.degree = get_degree(self.velocity[1] , self.velocity[0]) + 90.0
 
-        self.x = clamp(0, self.x, 800)
+        self.x = clamp(self.y, self.x, 800 - self.y)
         self.z = clamp(0, self.z, 600)
         if self.z == 0 and self.move_in_air:
             self.round_end()
 
-        if self.x == 0 or self.x == 800:
+        if self.x <= self.y or self.x >= 800 - self.y:
             self.velocity[0] *= -0.5
             self.accelate[0] *= -1
 

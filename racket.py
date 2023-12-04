@@ -10,6 +10,10 @@ def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
 
+def x_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_x
+
+
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
@@ -73,7 +77,7 @@ class Swing:  # 라켓을 휘두름.
         Racket.image.clip_composite_draw(0, 0, 512, 512, radians(racket.racket_rad + racket.default_rad), ''
                                          , racket.x + 35 * cos(radians(racket.racket_rad + racket.default_rad + 45.0))
                                          , racket.y + racket.height + 35 * sin(
-                radians(racket.racket_rad + racket.default_rad + 45.0) )
+                radians(racket.racket_rad + racket.default_rad + 45.0))
                                          , 70, 70);
         pass
 
@@ -83,7 +87,7 @@ class StateMachine:
         self.racket = racket
         self.cur_state = Idle
         self.transitions = {
-            Idle: {space_down: Swing, bt_swing: Swing},
+            Idle: {x_down: Swing, space_down: Swing, bt_swing: Swing},
             Swing: {time_out: Idle}
         }
 
@@ -111,8 +115,8 @@ class Racket:
     image = None
     swing_sound = None
 
-    def __init__(self, rad=0.0):
-        self.x, self.y = 0, 0
+    def __init__(self, rad=0.0, px = 0.0, py = 0.0):
+        self.x, self.y = px, py
         self.height = 0.0
         self.default_rad = rad
         self.racket_rad = 0.0
