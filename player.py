@@ -299,8 +299,9 @@ class Player:
         self.build_behavior_tree()
         self.bt = None
         self.point = 0  # 플레이어 점수
-
+        self.font = load_font('resource/SevenSegment.ttf', 20)
         if dir == '오른쪽':
+            self.font_position = (200, 550)
             self.racket = Racket(90.0)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
@@ -310,6 +311,7 @@ class Player:
             self.move_dir = 1  # 바라보는 방향 (이미지 위치)
 
         elif dir == '왼쪽':
+            self.font_position = (600, 550)
             self.racket = Racket(0.0)
             game_world.add_object(self.racket, 1)
             game_world.add_collision_pair('racket:shuttle', self.racket, None)
@@ -337,6 +339,7 @@ class Player:
 
     def draw(self):
         self.state_machine.draw()
+        self.font.draw(*self.font_position, f'{self.point}')
         draw_rectangle(*self.get_bb())
         pass
 

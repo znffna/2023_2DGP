@@ -5,6 +5,7 @@ class BackGround:
     def __init__(self):
         self.image = load_image('resource/playstage.png')
         self.x, self.y = 400, 300
+        self.height = 100
         self.bgm = load_music('resource/inplaying.mp3')
         self.bgm.set_volume(32)
         self.bgm.repeat_play()

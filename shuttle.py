@@ -3,6 +3,7 @@ from math import radians, atan, degrees, cos, sin
 from pico2d import *
 
 import game_framework
+import play_mode
 from racket import Swing
 
 
@@ -23,10 +24,12 @@ class Shuttle:
         self.x, self.y, self.z = 200, 30, 400
         self.velocity = [0.0, 0.0]
         self.accelate = [0.0, -9.8]
-
+        self.move_in_air = True
         self.cooldown = get_time()
         self.size = 20
         self.degree = 0.0
+        self.restart_timer = get_time()
+        self.start_spot = 'Player'
 
         if Shuttle.image == None:
             Shuttle.image = load_image('resource/shuttle.png')  # 200 x 225 size
@@ -37,6 +40,18 @@ class Shuttle:
             Shuttle.hit_sound.set_volume(32)
 
     def update(self):
+        # 판이 끝났을때 판을 초기화 하고 다시 시작되는 코드
+        if not self.move_in_air:
+            if get_time() - self.restart_timer > 1.5:
+                self.x = 200 if self.start_spot == 'Player' else 600
+                self.y = 30
+                self.z = 300
+                self.last_touch = None
+                self.move_in_air = True
+                self.velocity[0] = 0.0
+                self.velocity[1] = 0.0
+
+        # 이동 업데이트
         self.x += self.velocity[0] * game_framework.frame_time
         self.z += self.velocity[1] * game_framework.frame_time
 
@@ -47,6 +62,15 @@ class Shuttle:
 
         self.x = clamp(0, self.x, 800)
         self.z = clamp(0, self.z, 600)
+        if self.z == 0 and self.move_in_air:
+            self.move_in_air = False
+            self.restart_timer = get_time()
+            if self.x > 400:
+                play_mode.player.point += 1
+                self.start_spot = 'Player'
+            else:
+                play_mode.ai_player.point += 1
+                self.start_spot = 'AI'
 
         if self.x == 0 or self.x == 800:
             self.velocity[0] *= -0.5
@@ -78,14 +102,17 @@ class Shuttle:
                 other_rad = other.default_rad
                 # if other_rad == 0.0:
                 #     other_rad = 270.0
-                if other.swing_dir == -1:
-                    self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
-                    self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
-                    self.degree = other.racket_rad + 90.0
-                else:
-                    self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 270.0))
-                    self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 270.0))
-                    self.degree = other.racket_rad + 270.0
+                self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
+                self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
+                self.degree = other.racket_rad + 90.0
+                # if other.swing_dir == -1:
+                #     self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
+                #     self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
+                #     self.degree = other.racket_rad + 90.0
+                # else:
+                #     self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 270.0))
+                #     self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 270.0))
+                #     self.degree = other.racket_rad + 270.0
                 self.cooldown = get_time()
                 self.last_touch = other
                 Shuttle.hit_sound.play()

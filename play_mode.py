@@ -36,6 +36,7 @@ def init():
     global player
     global rackets
     global shuttle
+    global ai_player
     running = True
 
     stadium = BackGround()
