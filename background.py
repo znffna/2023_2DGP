@@ -18,7 +18,7 @@ class BackGround:
         # self.image.draw(1200, 30)
 
     def get_bb(self):  # Net
-        return 380, 0, 410, 100
+        return 380, 0, 410, 120
 
     def handle_collision(self, group, other):
         pass

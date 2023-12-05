@@ -56,6 +56,7 @@ def time_out(e):
     return e[0] == 'TIME_OUT'
 
 
+
 # Player Run Speed
 # 배드민턴 길이 = 13.4m, 출력할 캔버스 크기 : 800 * 600
 # PIXEL_PER_METER = (8000 / 1340)
@@ -103,7 +104,13 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+        if not player.bt:
+            player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y)
+        else:
+            if player.bt_state == 'IDLE':
+                player.image.clip_draw(int(player.frame + 6) * 70, player.move_dir * 80, 50, 80, player.x, player.y)
+            elif player.bt_state == 'MOVE':
+                player.image.clip_draw(int(player.frame) * 70, (player.move_dir + 4) * 80, 50, 80, player.x, player.y)
 
 
 
@@ -205,13 +212,12 @@ class MoveDiagonal:  # 대각선 이동 중
 class Jump:
     @staticmethod
     def enter(player, e):
-        player.move_dir = 5  # 바라보는 방향 (이미지 위치)
+        # player.move_dir = 5  # 바라보는 방향 (이미지 위치)
         current_time = get_time() - player.jump_time
         if current_time > JUMP_PER_TIME:
             player.jump_time = get_time()  # pico2d import 필요
             player.current_time = player.jump_time
             player.move_dir = 5 if player.face_dir == '오른쪽' else 6
-        pass
 
     @staticmethod
     def exit(player, e):
@@ -315,6 +321,37 @@ class DiagonalJump:
         pass
 
 
+ai_transitions = {
+            Idle: {right_down: MoveHorizon, left_down: MoveHorizon, right_up: MoveHorizon, left_up: MoveHorizon,
+                   up_down: MoveVertical, down_up: MoveVertical, down_down: MoveVertical, up_up: MoveVertical
+                , z_down: Jump},
+            MoveHorizon: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle
+                , up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal,
+                          z_down: HorizonJump},
+            MoveVertical: {right_down: MoveDiagonal, left_down: MoveDiagonal, right_up: MoveDiagonal,
+                           left_up: MoveDiagonal
+                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, z_down: VerticalJump},
+            MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical,
+                           left_up: MoveVertical
+                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon,
+                           z_down: DiagonalJump},
+            Jump: {right_down: HorizonJump, left_down: HorizonJump, right_up: HorizonJump, left_up: HorizonJump,
+                   up_down: VerticalJump, down_up: VerticalJump, down_down: VerticalJump, up_up: VerticalJump,
+                   time_out: Idle},
+            HorizonJump: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump,
+                          up_down: DiagonalJump, down_up: DiagonalJump, down_down: DiagonalJump, up_up: DiagonalJump,
+                          time_out: MoveHorizon},
+            VerticalJump: {right_down: DiagonalJump, left_down: DiagonalJump, right_up: DiagonalJump,
+                           left_up: DiagonalJump,
+                           up_down: Jump, down_up: Jump, down_down: Jump, up_up: Jump,
+                           time_out: MoveVertical},
+            DiagonalJump: {right_down: VerticalJump, left_down: VerticalJump, right_up: VerticalJump,
+                           left_up: VerticalJump,
+                           up_down: HorizonJump, down_up: HorizonJump, down_down: HorizonJump, up_up: HorizonJump,
+                           time_out: MoveDiagonal},
+        }
+
+
 class StateMachine:
     def __init__(self, player):
         self.player = player
@@ -383,8 +420,9 @@ class Player:
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         self.build_behavior_tree()
         self.bt = None
+        self.bt_state = 'IDLE'
         self.point = 0  # 플레이어 점수
-        self.jump_time = get_time()
+        self.jump_time = 0
         self.current_time = get_time()
         if dir == '오른쪽':
             self.x, self.y = 300, 60
@@ -411,12 +449,14 @@ class Player:
             Player.shadow_image = load_image('resource/shuttle_shadow.png')  # 200 x 225 size
 
     def update(self):
-        self.state_machine.update()
+        if self.bt:
+            self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 3
+            self.bt.run()
+        else:
+            self.state_machine.update()
         self.racket.x = self.x
         self.racket.y = self.y
         self.racket.height = self.height
-        if self.bt:
-            self.bt.run()
 
     def handle_event(self, e):
         self.state_machine.handle_event(('INPUT', e))
@@ -454,7 +494,6 @@ class Player:
         dir /= math.fabs(dir)
         self.x += dir * self.speed * RUN_SPEED_PPS * game_framework.frame_time  # * math.cos(self.dir)
         self.y += self.speed * RUN_HEIGHT_SPEED_PPS * math.sin(self.dir) * game_framework.frame_time
-
     pass
 
     def move_slightly_from(self, tx, ty):
@@ -463,11 +502,11 @@ class Player:
         dir /= math.fabs(dir)
         self.x += dir * self.speed * RUN_SPEED_PPS * game_framework.frame_time  # * math.cos(self.dir)
         self.y += self.speed * RUN_HEIGHT_SPEED_PPS * math.sin(self.dir) * game_framework.frame_time
-        self.x = clamp(self.y - 30, self.x, 800 - self.y)
+        self.x = clamp(self.y + 400 , self.x, 800 - self.y)
         self.y = clamp(35, self.y, 145 - 35)
 
     def move_to_shuttle(self, r=50.0):
-        self.move_slightly_to(play_mode.shuttle.x, play_mode.shuttle.y + 35)
+        self.move_slightly_to(play_mode.shuttle.x - 30, play_mode.shuttle.y + 35)
         if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
             return BehaviorTree.SUCCESS
         else:
@@ -516,7 +555,6 @@ class Player:
         return BehaviorTree.FAIL
 
     def is_racket_distance(self):
-        # TODO 거리계산
         if (play_mode.shuttle.x - self.x) ** 2 + (play_mode.shuttle.y - self.y) ** 2 + (
                 play_mode.shuttle.z - self.height) ** 2 < 150 ** 2:
             return BehaviorTree.SUCCESS

@@ -4,6 +4,7 @@ from pico2d import *
 
 import game_framework
 import play_mode
+import title_mode
 from racket import Swing
 
 
@@ -47,6 +48,13 @@ class Shuttle:
         # 판이 끝났을때 판을 초기화 하고 다시 시작되는 코드
         if not self.move_in_air:
             if get_time() - self.restart_timer > 1.5:
+                # 만약 21점을 내거나 듀스일경우 2점차일경우 결과창으로
+                if abs(play_mode.player.point - play_mode.ai_player.point) < 2:
+                    if play_mode.player.point > 20 or play_mode.ai_player.point > 20:
+                        game_framework.change_mode(title_mode)
+                elif play_mode.player.point > 20 or play_mode.ai_player.point > 20:
+                    game_framework.change_mode(title_mode)
+
                 self.x = 200 if self.start_spot == 'Player' else 600
                 self.y = 30
                 self.z = 300
@@ -54,6 +62,7 @@ class Shuttle:
                 self.move_in_air = True
                 self.velocity[0] = 0.0
                 self.velocity[1] = 0.0
+
 
         # 이동 업데이트
         self.x += self.velocity[0] * game_framework.frame_time
@@ -106,13 +115,15 @@ class Shuttle:
 
 
     def handle_collision(self, group, other):
-        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing and self.last_touch != other:
+        if group == 'racket:shuttle' and other.state_machine.cur_state == Swing :
             if get_time() - self.cooldown > 0.1:
-                other_rad = other.default_rad
+                if self.last_touch == other:
+                    self.round_end()
+                other_rad = other.default_rad + 45.0
                 # if other_rad == 0.0:
                 #     other_rad = 270.0
-                self.velocity[0] = 1400.0 * cos(radians(other.racket_rad + 90.0))
-                self.velocity[1] = 400.0 * sin(radians(other.racket_rad + 90.0))
+                self.velocity[0] = 1400.0 * cos(radians(other.racket_rad + other_rad + other.swing_dir * 90.0))
+                self.velocity[1] = 400.0 * sin(radians(other.racket_rad + other_rad + other.swing_dir * 90.0))
                 self.degree = other.racket_rad + 90.0
                 # if other.swing_dir == -1:
                 #     self.velocity[0] = 600.0 * cos(radians(other.racket_rad + 90.0))
