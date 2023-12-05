@@ -81,7 +81,6 @@ JUMP_PER_TIME = 1.0 / TIME_PER_JUMP
 
 
 # 상태에 대한 클래스
-
 class Idle:  # 가만히 있음
     @staticmethod
     def enter(player, e):
@@ -104,19 +103,14 @@ class Idle:  # 가만히 있음
 
     @staticmethod
     def draw(player):
-        if player.bt is None:
-            player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
-        else:
-            if player.bt_state == 'Idle':
-                player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
-            else:  # TODO 걷는 이미지가 나오도록 수정할 것.
-                player.image.clip_draw(int(player.frame)//3 * 70, (player.move_dir + 4) * 80, 50, 80, player.x, player.y);
-                pass
+        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
+
 
 
 class MoveHorizon:  # 좌우 이동 중
     @staticmethod
     def enter(player, e):
+        player.move_dir = 5  # 바라보는 방향 (이미지 위치)
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
             player.LR_dir = 1
@@ -146,6 +140,7 @@ class MoveHorizon:  # 좌우 이동 중
 class MoveVertical:  # 상하 이동 중
     @staticmethod
     def enter(player, e):
+        player.move_dir = 5  # 바라보는 방향 (이미지 위치)
         player.frame = 0
         if up_down(e) or down_up(e):  # 위쪽으로 RUN
             player.TB_dir = 1
@@ -174,6 +169,7 @@ class MoveVertical:  # 상하 이동 중
 class MoveDiagonal:  # 대각선 이동 중
     @staticmethod
     def enter(player, e):
+        player.move_dir = 5  # 바라보는 방향 (이미지 위치)
         player.frame = 0
         if right_down(e) or left_up(e):  # 오른쪽으로 RUN
             player.LR_dir = 1
@@ -209,6 +205,7 @@ class MoveDiagonal:  # 대각선 이동 중
 class Jump:
     @staticmethod
     def enter(player, e):
+        player.move_dir = 5  # 바라보는 방향 (이미지 위치)
         current_time = get_time() - player.jump_time
         if current_time > JUMP_PER_TIME:
             player.jump_time = get_time()  # pico2d import 필요
@@ -221,7 +218,8 @@ class Jump:
         current_time = get_time() - player.jump_time
         if current_time > JUMP_PER_TIME:
             player.height = 0.0
-            player.move_dir -= 4
+            player.move_dir = 1 if player.face_dir == '오른쪽' else 2
+            # player.move_dir -= 4
         pass
 
     @staticmethod
@@ -240,9 +238,11 @@ class Jump:
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x,
+        player.image.clip_draw((int(player.frame)) * 70, player.move_dir * 80, 50, 80, player.x,
                                player.y + player.height);
         pass
+
+
 class VerticalJump:
     @staticmethod
     def enter(player, e):
@@ -266,6 +266,7 @@ class VerticalJump:
         Jump.draw(player)
         pass
 
+
 class HorizonJump:
     @staticmethod
     def enter(player, e):
@@ -288,6 +289,7 @@ class HorizonJump:
     def draw(player):
         Jump.draw(player)
         pass
+
 
 class DiagonalJump:
     @staticmethod
@@ -329,15 +331,18 @@ class StateMachine:
                 , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, z_down: VerticalJump},
             MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical,
                            left_up: MoveVertical
-                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon, z_down: DiagonalJump},
+                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon,
+                           z_down: DiagonalJump},
             Jump: {right_down: HorizonJump, left_down: HorizonJump, right_up: HorizonJump, left_up: HorizonJump,
-                   up_down: VerticalJump, down_up: VerticalJump, down_down: VerticalJump, up_up: VerticalJump, time_out: Idle},
+                   up_down: VerticalJump, down_up: VerticalJump, down_down: VerticalJump, up_up: VerticalJump,
+                   time_out: Idle},
             HorizonJump: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump,
-                   up_down: DiagonalJump, down_up: DiagonalJump, down_down: DiagonalJump, up_up: DiagonalJump,
-                   time_out: MoveHorizon},
-            VerticalJump: {right_down: DiagonalJump, left_down: DiagonalJump, right_up: DiagonalJump, left_up: DiagonalJump,
-                          up_down: Jump, down_up: Jump, down_down: Jump, up_up: Jump,
-                          time_out: MoveVertical},
+                          up_down: DiagonalJump, down_up: DiagonalJump, down_down: DiagonalJump, up_up: DiagonalJump,
+                          time_out: MoveHorizon},
+            VerticalJump: {right_down: DiagonalJump, left_down: DiagonalJump, right_up: DiagonalJump,
+                           left_up: DiagonalJump,
+                           up_down: Jump, down_up: Jump, down_down: Jump, up_up: Jump,
+                           time_out: MoveVertical},
             DiagonalJump: {right_down: VerticalJump, left_down: VerticalJump, right_up: VerticalJump,
                            left_up: VerticalJump,
                            up_down: HorizonJump, down_up: HorizonJump, down_down: HorizonJump, up_up: HorizonJump,
@@ -378,7 +383,6 @@ class Player:
         self.TB_dir = 0  # 상하 이동하는 방향 (로직)
         self.build_behavior_tree()
         self.bt = None
-        self.bt_state = 'Idle'
         self.point = 0  # 플레이어 점수
         self.jump_time = get_time()
         self.current_time = get_time()
@@ -400,7 +404,6 @@ class Player:
             self.face_dir = dir  # 바라보는 방향 (방향 파악)
             self.move_dir = 2  # 바라보는 방향 (이미지 위치)
             self.build_behavior_tree()
-            self.bt_state = 'Idle'
 
         if Player.image == None:
             Player.image = load_image('resource/character.png')  # 70 x 80 크기 스프라이트
@@ -421,7 +424,7 @@ class Player:
 
     def draw(self):
         Player.shadow_image.clip_composite_draw(0, 0, 200, 200, 0, ''
-                                                 , self.x, self.y - 35, 40, 40)
+                                                , self.x, self.y - 35, 40, 40)
         self.state_machine.draw()
         pass
 
@@ -446,7 +449,6 @@ class Player:
         return BehaviorTree.SUCCESS
 
     def move_slightly_to(self, tx, ty):
-        self.bt_state = 'Move'
         self.dir = math.atan2(ty - self.y, tx + 30 - self.x)
         dir = math.cos(self.dir)
         dir /= math.fabs(dir)
@@ -466,9 +468,7 @@ class Player:
 
     def move_to_shuttle(self, r=50.0):
         self.move_slightly_to(play_mode.shuttle.x, play_mode.shuttle.y + 35)
-        self.bt_state = 'Move'
         if self.distance_less_than(play_mode.shuttle.x, play_mode.shuttle.y, self.x, self.y, r):
-            self.bt_state = 'Idle'
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
@@ -495,10 +495,8 @@ class Player:
 
     def move_to_center(self, r=0.3):
         if self.distance_less_than(600, 50, self.x, self.y, r):
-            self.bt_state = 'Idle'
             return BehaviorTree.SUCCESS
         else:
-            self.bt_state = 'Move'
             self.move_slightly_to(600, 50)
             return BehaviorTree.RUNNING
 
