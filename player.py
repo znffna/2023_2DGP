@@ -110,7 +110,7 @@ class Idle:  # 가만히 있음
             if player.bt_state == 'Idle':
                 player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x, player.y);
             else:  # TODO 걷는 이미지가 나오도록 수정할 것.
-                player.image.clip_draw(int(player.frame - 6) * 70, (player.move_dir + 4) * 80, 50, 80, player.x, player.y);
+                player.image.clip_draw(int(player.frame)//3 * 70, (player.move_dir + 4) * 80, 50, 80, player.x, player.y);
                 pass
 
 
@@ -198,15 +198,6 @@ class MoveDiagonal:  # 대각선 이동 중
         # player.x = clamp(35, player.x, 800 - 35)
         player.y += player.TB_dir * RUN_HEIGHT_SPEED_PPS * game_framework.frame_time
         player.y = clamp(35, player.y, 145 - 35)
-
-        # if player.height > 0:
-        #     player.height += player.velocity * game_framework.frame_time
-        #     player.velocity += player.accelate * game_framework.frame_time
-        #     player.accelate -= 0.0098 * game_framework.frame_time
-        # else:
-        #     player.accelate = 0
-        #     player.velocity = 0
-        #     player.height = 0
         pass
 
     @staticmethod
@@ -218,15 +209,19 @@ class MoveDiagonal:  # 대각선 이동 중
 class Jump:
     @staticmethod
     def enter(player, e):
-        player.jump_time = get_time()  # pico2d import 필요
-        player.current_time = player.jump_time
-        player.move_dir = 5 if player.face_dir == '오른쪽' else 6
+        current_time = get_time() - player.jump_time
+        if current_time > JUMP_PER_TIME:
+            player.jump_time = get_time()  # pico2d import 필요
+            player.current_time = player.jump_time
+            player.move_dir = 5 if player.face_dir == '오른쪽' else 6
         pass
 
     @staticmethod
     def exit(player, e):
-        player.height = 0.0
-        player.move_dir -= 4
+        current_time = get_time() - player.jump_time
+        if current_time > JUMP_PER_TIME:
+            player.height = 0.0
+            player.move_dir -= 4
         pass
 
     @staticmethod
@@ -248,6 +243,74 @@ class Jump:
         player.image.clip_draw(int(player.frame) * 70, player.move_dir * 80, 50, 80, player.x,
                                player.y + player.height);
         pass
+class VerticalJump:
+    @staticmethod
+    def enter(player, e):
+        Jump.enter(player, e)
+        MoveVertical.enter(player, e)
+        pass
+
+    @staticmethod
+    def exit(player, e):
+        Jump.exit(player, e)
+        pass
+
+    @staticmethod
+    def do(player):
+        Jump.do(player)
+        MoveVertical.do(player)
+        pass
+
+    @staticmethod
+    def draw(player):
+        Jump.draw(player)
+        pass
+
+class HorizonJump:
+    @staticmethod
+    def enter(player, e):
+        Jump.enter(player, e)
+        MoveHorizon.enter(player, e)
+        pass
+
+    @staticmethod
+    def exit(player, e):
+        Jump.exit(player, e)
+        pass
+
+    @staticmethod
+    def do(player):
+        Jump.do(player)
+        MoveHorizon.do(player)
+        pass
+
+    @staticmethod
+    def draw(player):
+        Jump.draw(player)
+        pass
+
+class DiagonalJump:
+    @staticmethod
+    def enter(player, e):
+        Jump.enter(player, e)
+        MoveDiagonal.enter(player, e)
+        pass
+
+    @staticmethod
+    def exit(player, e):
+        Jump.exit(player, e)
+        pass
+
+    @staticmethod
+    def do(player):
+        Jump.do(player)
+        MoveDiagonal.do(player)
+        pass
+
+    @staticmethod
+    def draw(player):
+        Jump.draw(player)
+        pass
 
 
 class StateMachine:
@@ -260,14 +323,25 @@ class StateMachine:
                 , z_down: Jump},
             MoveHorizon: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle
                 , up_down: MoveDiagonal, down_up: MoveDiagonal, down_down: MoveDiagonal, up_up: MoveDiagonal,
-                          z_down: Jump},
+                          z_down: HorizonJump},
             MoveVertical: {right_down: MoveDiagonal, left_down: MoveDiagonal, right_up: MoveDiagonal,
                            left_up: MoveDiagonal
-                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, z_down: Jump},
+                , up_down: Idle, down_up: Idle, down_down: Idle, up_up: Idle, z_down: VerticalJump},
             MoveDiagonal: {right_down: MoveVertical, left_down: MoveVertical, right_up: MoveVertical,
                            left_up: MoveVertical
-                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon, z_down: Jump},
-            Jump: {time_out: Idle}
+                , up_down: MoveHorizon, down_up: MoveHorizon, down_down: MoveHorizon, up_up: MoveHorizon, z_down: DiagonalJump},
+            Jump: {right_down: HorizonJump, left_down: HorizonJump, right_up: HorizonJump, left_up: HorizonJump,
+                   up_down: VerticalJump, down_up: VerticalJump, down_down: VerticalJump, up_up: VerticalJump, time_out: Idle},
+            HorizonJump: {right_down: Jump, left_down: Jump, right_up: Jump, left_up: Jump,
+                   up_down: DiagonalJump, down_up: DiagonalJump, down_down: DiagonalJump, up_up: DiagonalJump,
+                   time_out: MoveHorizon},
+            VerticalJump: {right_down: DiagonalJump, left_down: DiagonalJump, right_up: DiagonalJump, left_up: DiagonalJump,
+                          up_down: Jump, down_up: Jump, down_down: Jump, up_up: Jump,
+                          time_out: MoveVertical},
+            DiagonalJump: {right_down: VerticalJump, left_down: VerticalJump, right_up: VerticalJump,
+                           left_up: VerticalJump,
+                           up_down: HorizonJump, down_up: HorizonJump, down_down: HorizonJump, up_up: HorizonJump,
+                           time_out: MoveDiagonal},
         }
 
     def start(self):
@@ -306,6 +380,8 @@ class Player:
         self.bt = None
         self.bt_state = 'Idle'
         self.point = 0  # 플레이어 점수
+        self.jump_time = get_time()
+        self.current_time = get_time()
         if dir == '오른쪽':
             self.x, self.y = 300, 60
             self.racket = Racket(90.0, self.x, self.y)
