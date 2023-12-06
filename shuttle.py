@@ -103,15 +103,16 @@ class Shuttle:
         return self.x - self.size, self.y - self.size, self.x + self.size, self.y + self.size
 
     def round_end(self):
-        self.move_in_air = False
-        self.restart_timer = get_time()
-        Shuttle.get_points_sound.play()
-        if self.x > 400:
-            play_mode.player.point += 1
-            self.start_spot = 'Player'
-        else:
-            play_mode.ai_player.point += 1
-            self.start_spot = 'AI'
+        if get_time() - self.restart_timer > 1.5:
+            self.move_in_air = False
+            self.restart_timer = get_time()
+            Shuttle.get_points_sound.play()
+            if self.x > 400:
+                play_mode.player.point += 1
+                self.start_spot = 'Player'
+            else:
+                play_mode.ai_player.point += 1
+                self.start_spot = 'AI'
 
 
     def handle_collision(self, group, other):
